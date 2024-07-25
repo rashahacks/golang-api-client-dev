@@ -1,0 +1,8 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Credentials
+.jsmon/credentials
