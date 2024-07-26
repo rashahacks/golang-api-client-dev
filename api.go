@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -164,113 +165,61 @@ func uploadFileEndpoint(filePath string) {
 
 	file, err := os.Open(filePath)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return
+		log.Fatalf("Error opening file: %v", err)
 	}
 	defer file.Close()
-
-	fileInfo, err := file.Stat()
-	if err != nil {
-		fmt.Println("Error getting file info:", err)
-		return
-	}
-	fmt.Printf("File size: %d bytes\n", fileInfo.Size())
-	if fileInfo.Size() == 0 {
-		fmt.Println("Error: File is empty")
-		return
-	}
-
-	fileContent, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		fmt.Println("Error reading file:", err)
-		return
-	}
-	fmt.Printf("First 100 bytes of file content: %s\n", string(fileContent[:min(100, len(fileContent))]))
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
 	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
 	if err != nil {
-		fmt.Println("Error creating form file:", err)
-		return
-	}
-	_, err = io.Copy(part, file)
-	if err != nil {
-		fmt.Println("Error copying file content:", err)
-		return
+		log.Fatalf("Error creating form file: %v", err)
 	}
 
-	// Add Content-Type as a form field
-	//writer.WriteField("Content-Type", "multipart/form-data; boundary")
+	_, err = io.Copy(part, file)
+	if err != nil {
+		log.Fatalf("Error copying file content: %v", err)
+	}
 
 	err = writer.Close()
 	if err != nil {
-		fmt.Println("Error closing multipart writer:", err)
-		return
+		log.Fatalf("Error closing multipart writer: %v", err)
 	}
 
 	req, err := http.NewRequest("POST", endpoint, body)
 	if err != nil {
-		fmt.Println("Error creating request:", err)
-		return
+		log.Fatalf("Error creating request: %v", err)
 	}
-
-	fmt.Printf("Uploading file: %s\n", filePath)
-	fmt.Printf("Content-Type: %s\n", writer.FormDataContentType())
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
 
-	// Print request details
-	fmt.Printf("Request URL: %s\n", req.URL)
-	fmt.Printf("Request Method: %s\n", req.Method)
-	fmt.Printf("Request Headers:\n")
-	for key, values := range req.Header {
-		for _, value := range values {
-			fmt.Printf("%s: %s\n", key, value)
-		}
+	log.Printf("Sending request to: %s", endpoint)
+	log.Printf("Request headers:")
+	for k, v := range req.Header {
+		log.Printf("%s: %s", k, v)
 	}
 
-	// Send the request
+	// Debug request body length
+	log.Printf("Request body length: %d bytes", body.Len())
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
-		return
+		log.Fatalf("Error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
-	// Read and print the response
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response:", err)
-		return
-	}
-	fmt.Printf("Response status: %s\n", resp.Status)
-	fmt.Printf("Response body: %s\n", string(responseBody))
-
-	// Parse and print JSON response
-	var result interface{}
-	err = json.Unmarshal(responseBody, &result)
-	if err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		return
+		log.Fatalf("Error reading response: %v", err)
 	}
 
-	// Pretty print JSON
-	prettyJSON, err := json.MarshalIndent(result, "", "  ")
-	if err != nil {
-		fmt.Println("Error formatting JSON:", err)
-		return
-	}
+	log.Printf("Response status: %s", resp.Status)
+	log.Printf("Response body: %s", string(responseBody))
 
-	fmt.Println(string(prettyJSON))
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("Upload failed with status code: %d", resp.StatusCode)
 	}
-	return b
 }
