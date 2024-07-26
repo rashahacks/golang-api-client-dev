@@ -53,11 +53,11 @@ func StartCron(cronNotification string, cronTime int64, cronType string) error {
 	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal JSON response: %v\n", err)
+		return fmt.Errorf("failed to unmarshal JSON response: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("failed to start cron: %v\n", response.Message)
+		return fmt.Errorf("failed to start cron: %v", response.Message)
 	}
 
 	fmt.Println("Message:", response.Message)
@@ -86,14 +86,14 @@ func StopCron() error {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %v\n", err)
+		return fmt.Errorf("failed to read response body: %v", err)
 
 	}
 
 	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal JSON response: %v\n", err)
+		return fmt.Errorf("failed to unmarshal JSON response: %v", err)
 	}
 
 	fmt.Println("Message:", response.Message)
@@ -132,12 +132,12 @@ func UpdateCron(cronNotification string, cronType string) error {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %v\n", err)
+		return fmt.Errorf("failed to read response body: %v", err)
 	}
 	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal JSON response: %v\n", err)
+		return fmt.Errorf("failed to unmarshal JSON response: %v", err)
 	}
 
 	fmt.Println("Message:", response.Message)
