@@ -160,6 +160,7 @@ func scanFileEndpoint(fileId string) {
 
 	fmt.Println(string(prettyJSON))
 }
+
 func uploadFileEndpoint(filePath string) {
 	endpoint := fmt.Sprintf("%s/uploadFile", apiBaseURL)
 
@@ -223,3 +224,104 @@ func uploadFileEndpoint(filePath string) {
 		log.Fatalf("Upload failed with status code: %d", resp.StatusCode)
 	}
 }
+
+func getAllAutomationResults(input, inputType string, showOnly string) {
+	endpoint := fmt.Sprintf("%s/getAllAutomationResults", apiBaseURL)
+
+	//URL with query parameters
+	url := fmt.Sprintf("%s?showonly=%s&inputType=%s&input=%s", endpoint, showOnly, inputType, input)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+
+	// Parse and print JSON response
+	var result interface{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return
+	}
+
+	// Pretty print JSON
+	prettyJSON, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		fmt.Println("Error formatting JSON:", err)
+		return
+	}
+
+	fmt.Println(string(prettyJSON))
+}
+
+func getScannerResults() {
+	endpoint := fmt.Sprintf("%s/getScannerResults", apiBaseURL)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	// Send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Read the response
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+
+	// Parse JSON response
+	var result struct {
+		Message string `json:"message"`
+		Data    struct {
+			ModuleName string `json:"moduleName"`
+			URL        string `json:"url"`
+		} `json:"data"`
+	}
+
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return
+	}
+
+	// Print the result
+	fmt.Printf("Message: %s\n", result.Message)
+	if result.Data.ModuleName != "" {
+		fmt.Printf("Module Name: %s\n", result.Data.ModuleName)
+		fmt.Printf("URL: %s\n", result.Data.URL)
+	}
+}
+
+// getAllAutomationResults - > --AutomationData (flag name) with showonly to be changed as View and no sort and pagination
+// input -> inputValue other options are compulsory for this function
+
+// getScannerResult -> --scannerData (flag Name)
