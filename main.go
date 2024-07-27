@@ -20,6 +20,8 @@ func main() {
 	cronTime := flag.Int64("time", 0, "Set cronjob time.")
 	cronType := flag.String("type", "", "Set type of cronjob.")
 	viewurls := flag.Bool("urls", false, "view all urls")
+	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
+	usageFlag := flag.Bool("usage", false, "View user profile")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
@@ -78,6 +80,10 @@ func main() {
 			os.Exit(1)
 		}
 		getAllAutomationResults(parts[0], parts[1], parts[2])
+	case *scanDomainFlag != "":
+		automateScanDomain(*scanDomainFlag)
+	case *usageFlag:
+		callViewProfile()
 	default:
 		fmt.Println("No valid action specified.")
 		flag.Usage()
