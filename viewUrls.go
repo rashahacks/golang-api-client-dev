@@ -17,7 +17,7 @@ type URLItem struct {
 
 
 func viewUrls() {
-	fmt.Println("viewUrls function called") // Debug statement
+	//fmt.Println("viewUrls function called") // Debug statement
 	endpoint := fmt.Sprintf("%s/searchAllUrls", apiBaseURL)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", endpoint, nil)
@@ -47,6 +47,9 @@ func viewUrls() {
 		return
 	}
 
-	fmt.Println("Message:", response.Message)
-	fmt.Println("URLs:", response.Urls)
+	//fmt.Println("Message:", response.Message)
+	//fmt.Println("URLs:")
+	for _, urlItem := range response.Urls {
+		fmt.Println(urlItem.URL)
+	}
 }
