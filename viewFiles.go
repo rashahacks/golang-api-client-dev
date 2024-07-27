@@ -8,8 +8,11 @@ import(
 )
 
 type FilesResponse struct {
-	Files   []string `json:"files"`
+	Files   []FILEItem `json:"files"`
 	Message string   `json:"message"`
+}
+type FILEItem struct {
+	FILE string `json:"files"`
 }
 
 func viewFiles() {
@@ -42,6 +45,9 @@ func viewFiles() {
 		return
 	}
 
-	fmt.Println("Message:", response.Message)
-	fmt.Println("Files:", response.Files)
+	//fmt.Println("Message:", response.Message)
+	//fmt.Println("Files:", response.Files)
+	for _, fileItem := range response.Files {
+		fmt.Println(fileItem.FILE)
+	}
 }
