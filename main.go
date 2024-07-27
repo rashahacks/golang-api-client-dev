@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	scanUrl := flag.String("scanUrl", "", "URL or scan ID to rescan")
 	uploadUrl := flag.String("uploadUrl", "", "URL to upload for scanning")
 	apiKeyFlag := flag.String("apikey", "", "API key for authentication")
@@ -20,6 +19,7 @@ func main() {
 	cronNotification := flag.String("notifications", "", "Set cronjob notification.")
 	cronTime := flag.Int64("time", 0, "Set cronjob time.")
 	cronType := flag.String("type", "", "Set type of cronjob.")
+	viewurls := flag.Bool("urls", false, "view all urls")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
@@ -28,53 +28,60 @@ func main() {
 		flag.PrintDefaults()
 	}
 
-	// Check if any flags were provided
-	if flag.NFlag() == 0 {
-		fmt.Println("No options provided. Use -h or --help for usage information.")
+	flag.Parse()
+
+	// Handle API key
+	if *apiKeyFlag != "" {
+		setAPIKey(*apiKeyFlag)
+		fmt.Println("Using provided API key.")
+	} else {
+		err := loadAPIKey()
+		if err != nil {
+			fmt.Println("Error loading API key:", err)
+			fmt.Println("Please provide an API key using the -apikey flag.")
+			os.Exit(1)
+		}
+		fmt.Println("Using API key from credentials file.")
+	}
+
+	// Check if any action flags were provided
+	if flag.NFlag() == 0 || (flag.NFlag() == 1 && *apiKeyFlag != "") {
+		fmt.Println("No action specified. Use -h or --help for usage information.")
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	flag.Parse()
-
-	if *apiKeyFlag != "" {
-		setAPIKey(*apiKeyFlag)
-	} else {
-		// loading API key from credentials file
-		err := loadAPIKey()
-		if err != nil {
-			fmt.Println("Error loading API key:", err)
-			os.Exit(1)
-		}
-	}
-	fmt.Println("API Key:", getAPIKey())
-
-	if *scanFileId != "" {
+	// Execute the appropriate function based on the provided flag
+	switch {
+	case *scanFileId != "":
 		scanFileEndpoint(*scanFileId)
-	} else if *uploadFile != "" {
+	case *uploadFile != "":
 		uploadFileEndpoint(*uploadFile)
-	} else if *uploadUrl != "" {
+	case *viewurls:
+		viewUrls()
+	case *uploadUrl != "":
 		uploadUrlEndpoint(*uploadUrl)
-	} else if *getScannerResultsFlag {
+	case *getScannerResultsFlag:
 		getScannerResults()
-	} else if *scanUrl != "" {
+	case *scanUrl != "":
 		rescanUrlEndpoint(*scanUrl)
-	} else if *cron == "start" {
+	case *cron == "start":
 		StartCron(*cronNotification, *cronTime, *cronType)
-	} else if *cron == "stop" {
+	case *cron == "stop":
 		StopCron()
-	} else if *cron == "update" {
+	case *cron == "update":
 		UpdateCron(*cronNotification, *cronType)
-	} else if *getAllResults != "" {
+	case *getAllResults != "":
 		parts := strings.Split(*getAllResults, ",")
 		if len(parts) != 3 {
-			fmt.Println("Invalid format for getAllResults. Use: input,inputType,showOnly")
-			return
+			fmt.Println("Invalid format for automationData. Use: input,inputType,showOnly")
+			os.Exit(1)
 		}
 		getAllAutomationResults(parts[0], parts[1], parts[2])
-	} else {
-		fmt.Println("No action specified.")
+	default:
+		fmt.Println("No valid action specified.")
 		flag.Usage()
+		os.Exit(1)
 	}
 }
 

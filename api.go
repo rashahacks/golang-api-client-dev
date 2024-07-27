@@ -14,6 +14,14 @@ import (
 	"strings"
 )
 
+type URLResponse struct {
+	Urls    []URLItem `json:"urls"`
+	Message string    `json:"Message"`
+}
+type URLItem struct {
+	URL string `json:"url"`
+}
+
 func uploadUrlEndpoint(url string) {
 	endpoint := fmt.Sprintf("%s/uploadUrl", apiBaseURL)
 
@@ -302,8 +310,8 @@ func getScannerResults() {
 	var result struct {
 		Message string `json:"message"`
 		Data    struct {
-			ModuleName string `json:"moduleName"`
-			URL        string `json:"url"`
+			ModuleName []string `json:"moduleName"`
+			URL        string   `json:"url"`
 		} `json:"data"`
 	}
 
@@ -313,12 +321,48 @@ func getScannerResults() {
 		return
 	}
 
-	// Print the result
-	fmt.Printf("Message: %s\n", result.Message)
-	if result.Data.ModuleName != "" {
-		fmt.Printf("Module Name: %s\n", result.Data.ModuleName)
-		fmt.Printf("URL: %s\n", result.Data.URL)
+	// Print the result in a more readable format
+	fmt.Println("Message:", result.Message)
+	fmt.Println("URL:", result.Data.URL)
+	fmt.Println("Modules found:")
+	for _, module := range result.Data.ModuleName {
+		fmt.Printf("- %s\n", module)
 	}
+}
+
+func viewUrls() {
+	fmt.Println("viewUrls function called") // Debug statement
+	endpoint := fmt.Sprintf("%s/searchAllUrls", apiBaseURL)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("failed to send request: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("failed to read response body: %v", err)
+		return
+	}
+	var response URLResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		fmt.Printf("failed to unmarshal JSON response: %v", err)
+		return
+	}
+
+	fmt.Println("Message:", response.Message)
+	fmt.Println("URLs:", response.Urls)
 }
 
 // getAllAutomationResults - > --AutomationData (flag name) with showonly to be changed as View and no sort and pagination
