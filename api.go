@@ -14,14 +14,6 @@ import (
 	"strings"
 )
 
-type URLResponse struct {
-	Urls    []URLItem `json:"urls"`
-	Message string    `json:"Message"`
-}
-type URLItem struct {
-	URL string `json:"url"`
-}
-
 type AutomateScanDomainRequest struct {
 	Domain string `json:"domain"`
 }
@@ -340,40 +332,40 @@ func getScannerResults() {
 	}
 }
 
-func viewUrls() {
-	fmt.Println("viewUrls function called")
-	endpoint := fmt.Sprintf("%s/searchAllUrls", apiBaseURL)
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", endpoint, nil)
-	if err != nil {
-		fmt.Println("Error creating request:", err)
-		return
-	}
+// func viewUrls() {
+// 	fmt.Println("viewUrls function called")
+// 	endpoint := fmt.Sprintf("%s/searchAllUrls", apiBaseURL)
+// 	client := &http.Client{}
+// 	req, err := http.NewRequest("GET", endpoint, nil)
+// 	if err != nil {
+// 		fmt.Println("Error creating request:", err)
+// 		return
+// 	}
 
-	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+// 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
 
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Printf("failed to send request: %v", err)
-		return
-	}
-	defer resp.Body.Close()
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		fmt.Printf("failed to send request: %v", err)
+// 		return
+// 	}
+// 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("failed to read response body: %v", err)
-		return
-	}
-	var response URLResponse
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		fmt.Printf("failed to unmarshal JSON response: %v", err)
-		return
-	}
+// 	body, err := ioutil.ReadAll(resp.Body)
+// 	if err != nil {
+// 		fmt.Printf("failed to read response body: %v", err)
+// 		return
+// 	}
+// 	var response URLResponse
+// 	err = json.Unmarshal(body, &response)
+// 	if err != nil {
+// 		fmt.Printf("failed to unmarshal JSON response: %v", err)
+// 		return
+// 	}
 
-	fmt.Println("Message:", response.Message)
-	fmt.Println("URLs:", response.Urls)
-}
+// 	fmt.Println("Message:", response.Message)
+// 	fmt.Println("URLs:", response.Urls)
+// }
 
 func automateScanDomain(domain string) {
 	fmt.Println("automateScanDomain function called")

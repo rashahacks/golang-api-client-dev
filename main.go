@@ -22,6 +22,7 @@ func main() {
 	viewurls := flag.Bool("urls", false, "view all urls")
 	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
 	usageFlag := flag.Bool("usage", false, "View user profile")
+	viewfiles := flag.Bool("files", false, "view all files")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
@@ -61,6 +62,8 @@ func main() {
 		uploadFileEndpoint(*uploadFile)
 	case *viewurls:
 		viewUrls()
+	case *viewfiles:
+		viewFiles()
 	case *uploadUrl != "":
 		uploadUrlEndpoint(*uploadUrl)
 	case *getScannerResultsFlag:
