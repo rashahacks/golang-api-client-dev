@@ -20,6 +20,7 @@ func main() {
 	cronTime := flag.Int64("time", 0, "Set cronjob time.")
 	cronType := flag.String("type", "", "Set type of cronjob.")
 	viewurls := flag.Bool("urls", false, "view all urls")
+	viewfiles := flag.Bool("files", false, "view all files")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
@@ -59,6 +60,8 @@ func main() {
 		uploadFileEndpoint(*uploadFile)
 	case *viewurls:
 		viewUrls()
+	case *viewfiles:
+		viewFiles()
 	case *uploadUrl != "":
 		uploadUrlEndpoint(*uploadUrl)
 	case *getScannerResultsFlag:
