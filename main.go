@@ -23,6 +23,7 @@ func main() {
 	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
 	usageFlag := flag.Bool("usage", false, "View user profile")
 	viewfiles := flag.Bool("files", false, "view all files")
+	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
@@ -74,6 +75,13 @@ func main() {
 		StartCron(*cronNotification, *cronTime, *cronType)
 	case *cron == "stop":
 		StopCron()
+	case *compareFlag != "":
+		ids := strings.Split(*compareFlag, ",")
+		if len(ids) != 2 {
+			fmt.Println("Invalid format for compare. Use: JSMON_ID1,JSMON_ID2")
+			os.Exit(1)
+		}
+		compareEndpoint(strings.TrimSpace(ids[0]), strings.TrimSpace(ids[1]))
 	case *cron == "update":
 		UpdateCron(*cronNotification, *cronType)
 	case *getAllResults != "":
