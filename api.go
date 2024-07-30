@@ -14,7 +14,6 @@ import (
 	"strings"
 )
 
-
 func uploadUrlEndpoint(url string) {
 	endpoint := fmt.Sprintf("%s/uploadUrl", apiBaseURL)
 
