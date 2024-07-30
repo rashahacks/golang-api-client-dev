@@ -1,5 +1,6 @@
 package main
-import(
+
+import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,7 +10,7 @@ import(
 
 type FilesResponse struct {
 	Files   []FILEItem `json:"files"`
-	Message string   `json:"message"`
+	Message string     `json:"message"`
 }
 type FILEItem struct {
 	FILE string `json:"files"`

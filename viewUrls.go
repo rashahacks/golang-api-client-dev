@@ -1,10 +1,11 @@
 package main
+
 import (
 	"encoding/json"
-	"strings"
 	"fmt"
-	"net/http"
 	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
 type URLResponse struct {
@@ -14,7 +15,6 @@ type URLResponse struct {
 type URLItem struct {
 	URL string `json:"url"`
 }
-
 
 func viewUrls() {
 	//fmt.Println("viewUrls function called") // Debug statement

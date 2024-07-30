@@ -20,12 +20,15 @@ func main() {
 	cronTime := flag.Int64("time", 0, "Set cronjob time.")
 	cronType := flag.String("type", "", "Set type of cronjob.")
 	viewurls := flag.Bool("urls", false, "view all urls")
+	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
+	usageFlag := flag.Bool("usage", false, "View user profile")
 	viewfiles := flag.Bool("files", false, "view all files")
 	viewEmails := flag.String("Emails", "", "view all Emails")
 	s3domains := flag.String("S3Domains", "", "get all S3Domains")
 	ip := flag.String("ips", "", "get all Ips")
 	domainUrl := flag.String("DomainUrls", "", "get DomainUrls")
 	apiPath := flag.String("api", "", "get the apis")
+	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
@@ -108,6 +111,13 @@ func main() {
 		StartCron(*cronNotification, *cronTime, *cronType)
 	case *cron == "stop":
 		StopCron()
+	case *compareFlag != "":
+		ids := strings.Split(*compareFlag, ",")
+		if len(ids) != 2 {
+			fmt.Println("Invalid format for compare. Use: JSMON_ID1,JSMON_ID2")
+			os.Exit(1)
+		}
+		compareEndpoint(strings.TrimSpace(ids[0]), strings.TrimSpace(ids[1]))
 	case *cron == "update":
 		UpdateCron(*cronNotification, *cronType)
 	case *getAllResults != "":
@@ -117,6 +127,10 @@ func main() {
 			os.Exit(1)
 		}
 		getAllAutomationResults(parts[0], parts[1], parts[2])
+	case *scanDomainFlag != "":
+		automateScanDomain(*scanDomainFlag)
+	case *usageFlag:
+		callViewProfile()
 	default:
 		fmt.Println("No valid action specified.")
 		flag.Usage()
