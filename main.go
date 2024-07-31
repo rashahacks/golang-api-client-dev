@@ -25,6 +25,11 @@ func main() {
 
 	usageFlag := flag.Bool("usage", false, "View user profile")
 	viewfiles := flag.Bool("files", false, "view all files")
+	viewEmails := flag.String("Emails", "", "view all Emails")
+	s3domains := flag.String("S3Domains", "", "get all S3Domains")
+	ip := flag.String("ips", "", "get all Ips")
+	domainUrl := flag.String("DomainUrls", "", "get DomainUrls")
+	apiPath := flag.String("api", "", "get the apis")
 	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
 
 	flag.Usage = func() {
@@ -33,7 +38,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Options:\n")
 		flag.PrintDefaults()
 	}
-
+ 
 	flag.Parse()
 
 	// Handle API key
@@ -69,6 +74,37 @@ func main() {
 		viewFiles()
 	case *uploadUrl != "":
 		uploadUrlEndpoint(*uploadUrl)
+	case *viewEmails != "":
+		// Extract emails for provided domains
+		domains := strings.Split(*viewEmails, ",")
+		for i, domain := range domains {
+			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+		}
+		getEmails(domains)
+	case *s3domains !="":
+		domains := strings.Split(*s3domains, ",")
+		for i, domain := range domains {
+			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+		}
+		getS3Domains(domains)
+	case *ip !="":
+		domains := strings.Split(*ip, ",")
+		for i, domain := range domains {
+			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+		}
+		getAllIps(domains)
+	case *domainUrl !="":
+		domains := strings.Split(*domainUrl, ",")
+		for i, domain := range domains {
+			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+		}
+	getDomainUrls(domains)
+	case *apiPath != "": // Split the comma-separated string into a slice
+	domains := strings.Split(*apiPath, ",")
+	for i, domain := range domains {
+		domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+	}
+	getApiPaths(domains)
 	case *getScannerResultsFlag:
 		getScannerResults()
 	case *scanUrl != "":
