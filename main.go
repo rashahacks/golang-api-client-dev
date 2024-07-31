@@ -21,6 +21,8 @@ func main() {
 	cronType := flag.String("type", "", "Set type of cronjob.")
 	viewurls := flag.Bool("urls", false, "view all urls")
 	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
+	wordsFlag := flag.String("words", "", "Comma-separated list of words to include in the scan")
+
 	usageFlag := flag.Bool("usage", false, "View user profile")
 	viewfiles := flag.Bool("files", false, "view all files")
 	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
@@ -92,7 +94,12 @@ func main() {
 		}
 		getAllAutomationResults(parts[0], parts[1], parts[2])
 	case *scanDomainFlag != "":
-		automateScanDomain(*scanDomainFlag)
+		words := []string{}
+		if *wordsFlag != "" {
+			words = strings.Split(*wordsFlag, ",")
+		}
+		fmt.Printf("Domain: %s, Words: %v\n", *scanDomainFlag, words) // Add this line for debugging
+		automateScanDomain(*scanDomainFlag, words)
 	case *usageFlag:
 		callViewProfile()
 	default:

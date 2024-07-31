@@ -21,7 +21,8 @@ type DiffItem struct {
 }
 
 type AutomateScanDomainRequest struct {
-	Domain string `json:"domain"`
+	Domain string   `json:"domain"`
+	Words  []string `json:"words"`
 }
 
 type AnalysisResult struct {
@@ -338,11 +339,14 @@ func getScannerResults() {
 	}
 }
 
-func automateScanDomain(domain string) {
-	fmt.Println("automateScanDomain function called")
+func automateScanDomain(domain string, words []string) {
+	fmt.Printf("automateScanDomain called with domain: %s and words: %v\n", domain, words)
 	endpoint := fmt.Sprintf("%s/automateScanDomain", apiBaseURL)
 
-	requestBody := AutomateScanDomainRequest{Domain: domain}
+	requestBody := AutomateScanDomainRequest{
+		Domain: domain,
+		Words:  words,
+	}
 	body, err := json.Marshal(requestBody)
 	if err != nil {
 		fmt.Printf("failed to marshal request body: %v\n", err)
