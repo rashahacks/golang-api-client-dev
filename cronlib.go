@@ -14,16 +14,17 @@ type Response struct {
 	Data    string `json:"data"`
 }
 
-func StartCron(cronNotification string, cronTime int64, cronType string) error {
+func StartCron(cronNotification string, cronTime int64, cronType string) {
 	apiKey := strings.TrimSpace(getAPIKey())
 	baseUrl := apiBaseURL
 	client := &http.Client{}
 
 	var method = "PUT"
-	var url = baseUrl + "/api/v2/startCron"
+	var url = baseUrl + "/startCron"
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %v", err)
+		fmt.Errorf("failed to create request: %v", err)
+		return
 	}
 	req.Header.Set("X-Jsmon-Key", apiKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -35,80 +36,83 @@ func StartCron(cronNotification string, cronTime int64, cronType string) error {
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("failed to marshal JSON: %v", err)
+		fmt.Errorf("failed to marshal JSON: %v", err)
+		return
 	}
 
 	req.Body = ioutil.NopCloser(bytes.NewReader(jsonData))
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
+		fmt.Errorf("failed to send request: %v", err)
+		return
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %v", err)
+		fmt.Errorf("failed to read response body: %v", err)
+		return
 	}
 	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal JSON response: %v", err)
-	}
-
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("failed to start cron: %v", response.Message)
+		fmt.Errorf("failed to unmarshal JSON response: %v", err)
+		return
 	}
 
 	fmt.Println("Message:", response.Message)
-	return nil
 
 }
 
-func StopCron() error {
+func StopCron() {
 	apiKey := strings.TrimSpace(getAPIKey())
 	baseUrl := apiBaseURL
 	client := &http.Client{}
 	var method = "PUT"
-	var url = baseUrl + "/api/v2/stopCron"
+	var url = baseUrl + "/stopCron"
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %v", err)
+		fmt.Errorf("failed to create request: %v", err)
+		return
 	}
 	req.Header.Set("X-Jsmon-Key", apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
+		fmt.Errorf("failed to send request: %v", err)
+		return
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %v", err)
-
+		fmt.Errorf("failed to read response body: %v", err)
+		return
 	}
 
 	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal JSON response: %v", err)
+		fmt.Errorf("failed to unmarshal JSON response: %v", err)
+		return
 	}
 
 	fmt.Println("Message:", response.Message)
-	return nil
+
 }
 
-func UpdateCron(cronNotification string, cronType string) error {
+func UpdateCron(cronNotification string, cronType string) {
 	apiKey := strings.TrimSpace(getAPIKey())
 	baseUrl := apiBaseURL
 	client := &http.Client{}
 	var method = "PUT"
-	var url = baseUrl + "/api/v2/updateCron"
+	var url = baseUrl + "/updateCron"
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %v", err)
+		fmt.Errorf("failed to create request: %v", err)
+		return
 	}
 	req.Header.Set("X-Jsmon-Key", apiKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -119,28 +123,31 @@ func UpdateCron(cronNotification string, cronType string) error {
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("failed to marshal JSON: %v", err)
+		fmt.Errorf("failed to marshal JSON: %v", err)
+		return
 	}
 
 	req.Body = ioutil.NopCloser(bytes.NewReader(jsonData))
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
+		fmt.Errorf("failed to send request: %v", err)
+		return
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %v", err)
+		fmt.Errorf("failed to read response body: %v", err)
+		return
 	}
 	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal JSON response: %v", err)
+		fmt.Errorf("failed to unmarshal JSON response: %v", err)
+		return
 	}
 
 	fmt.Println("Message:", response.Message)
-	return nil
 
 }
