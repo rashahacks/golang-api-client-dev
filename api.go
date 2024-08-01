@@ -14,10 +14,46 @@ import (
 	"strings"
 )
 
+type DiffItem struct {
+	Added   bool   `json:"added"`
+	Removed bool   `json:"removed"`
+	Value   string `json:"value"`
+}
+
+type AutomateScanDomainRequest struct {
+	Domain string   `json:"domain"`
+	Words  []string `json:"words"`
+}
+
+type AnalysisResult struct {
+	Message     string `json:"message"`
+	TotalChunks int    `json:"totalChunks"`
+}
+
+type ModuleScanResult struct {
+	Message string `json:"message"`
+	Data    []struct {
+		ModuleName string `json:"ModuleName"`
+		URL        string `json:"URL"`
+	} `json:"data"`
+}
+
+type ScanResponse struct {
+	Message          string           `json:"message"`
+	AnalysisResult   AnalysisResult   `json:"analysis_result"`
+	ModuleScanResult ModuleScanResult `json:"modulescan_result"`
+}
+
+type AutomateScanDomainResponse struct {
+	Message       string       `json:"message"`
+	FileId        string       `json:"fileId"`
+	TrimmedDomain string       `json:"trimmedDomain"`
+	ScanResponse  ScanResponse `json:"scanResponse"`
+}
+
 func uploadUrlEndpoint(url string) {
 	endpoint := fmt.Sprintf("%s/uploadUrl", apiBaseURL)
 
-	//request body
 	requestBody, err := json.Marshal(map[string]string{
 		"url": url,
 	})
@@ -35,7 +71,6 @@ func uploadUrlEndpoint(url string) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
 
-	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -44,14 +79,12 @@ func uploadUrlEndpoint(url string) {
 	}
 	defer resp.Body.Close()
 
-	// Read the response
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response:", err)
 		return
 	}
 
-	// Parse and print JSON response
 	var result interface{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
@@ -59,7 +92,6 @@ func uploadUrlEndpoint(url string) {
 		return
 	}
 
-	// Pretty print JSON
 	prettyJSON, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		fmt.Println("Error formatting JSON:", err)
@@ -81,7 +113,6 @@ func rescanUrlEndpoint(scanId string) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
 
-	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -90,14 +121,12 @@ func rescanUrlEndpoint(scanId string) {
 	}
 	defer resp.Body.Close()
 
-	// Read the response
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response:", err)
 		return
 	}
 
-	// Parse and print JSON response
 	var result interface{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
@@ -127,7 +156,6 @@ func scanFileEndpoint(fileId string) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
 
-	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -136,14 +164,12 @@ func scanFileEndpoint(fileId string) {
 	}
 	defer resp.Body.Close()
 
-	// Read and print the response
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response:", err)
 		return
 	}
 
-	// Parse and print JSON response
 	var result interface{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
@@ -151,7 +177,6 @@ func scanFileEndpoint(fileId string) {
 		return
 	}
 
-	// Pretty print JSON
 	prettyJSON, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		fmt.Println("Error formatting JSON:", err)
@@ -160,6 +185,7 @@ func scanFileEndpoint(fileId string) {
 
 	fmt.Println(string(prettyJSON))
 }
+
 func uploadFileEndpoint(filePath string) {
 	endpoint := fmt.Sprintf("%s/uploadFile", apiBaseURL)
 
@@ -201,7 +227,6 @@ func uploadFileEndpoint(filePath string) {
 		log.Printf("%s: %s", k, v)
 	}
 
-	// Debug request body length
 	log.Printf("Request body length: %d bytes", body.Len())
 
 	client := &http.Client{}
@@ -221,5 +246,299 @@ func uploadFileEndpoint(filePath string) {
 
 	if resp.StatusCode != http.StatusOK {
 		log.Fatalf("Upload failed with status code: %d", resp.StatusCode)
+	}
+}
+
+func getAllAutomationResults(input, inputType string, showOnly string) {
+	endpoint := fmt.Sprintf("%s/getAllAutomationResults", apiBaseURL)
+
+	url := fmt.Sprintf("%s?showonly=%s&inputType=%s&input=%s", endpoint, showOnly, inputType, input)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+
+	var result interface{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return
+	}
+
+	prettyJSON, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		fmt.Println("Error formatting JSON:", err)
+		return
+	}
+
+	fmt.Println(string(prettyJSON))
+}
+
+func getScannerResults() {
+	endpoint := fmt.Sprintf("%s/getScannerResults", apiBaseURL)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+
+	var result struct {
+		Message string `json:"message"`
+		Data    struct {
+			ModuleName []string `json:"moduleName"`
+			URL        string   `json:"url"`
+		} `json:"data"`
+	}
+
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return
+	}
+
+	fmt.Println("Message:", result.Message)
+	fmt.Println("URL:", result.Data.URL)
+	fmt.Println("Modules found:")
+	for _, module := range result.Data.ModuleName {
+		fmt.Printf("- %s\n", module)
+	}
+}
+
+func automateScanDomain(domain string, words []string) {
+	fmt.Printf("automateScanDomain called with domain: %s and words: %v\n", domain, words)
+	endpoint := fmt.Sprintf("%s/automateScanDomain", apiBaseURL)
+
+	requestBody := AutomateScanDomainRequest{
+		Domain: domain,
+		Words:  words,
+	}
+	body, err := json.Marshal(requestBody)
+	if err != nil {
+		fmt.Printf("failed to marshal request body: %v\n", err)
+		return
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(body))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("failed to send request: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("failed to read response body: %v\n", err)
+		return
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("non-200 response: %s\n", responseBody)
+		return
+	}
+
+	var response AutomateScanDomainResponse
+	err = json.Unmarshal(responseBody, &response)
+	if err != nil {
+		fmt.Printf("failed to unmarshal JSON response: %v\n", err)
+		return
+	}
+
+	printFormattedResponse(response)
+}
+
+func printFormattedResponse(response AutomateScanDomainResponse) {
+	fmt.Println("Message:", response.Message)
+	fmt.Println("File ID:", response.FileId)
+	fmt.Println("Trimmed Domain:", response.TrimmedDomain)
+
+	fmt.Println("\nScan Response:")
+	fmt.Println("  Message:", response.ScanResponse.Message)
+
+	fmt.Println("\n  Analysis Result:")
+	fmt.Println("    Message:", response.ScanResponse.AnalysisResult.Message)
+	fmt.Println("    Total Chunks:", response.ScanResponse.AnalysisResult.TotalChunks)
+
+	fmt.Println("\n  Module Scan Result:")
+	fmt.Println("    Message:", response.ScanResponse.ModuleScanResult.Message)
+	for _, module := range response.ScanResponse.ModuleScanResult.Data {
+		fmt.Println("    Module Name:", module.ModuleName)
+		fmt.Println("    URL:", module.URL)
+		fmt.Println()
+	}
+}
+
+func callViewProfile() {
+	endpoint := fmt.Sprintf("%s/viewProfile", apiBaseURL)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		os.Exit(1)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error making request:", err)
+		os.Exit(1)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		os.Exit(1)
+	}
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		fmt.Println("Error unmarshalling response:", err)
+		os.Exit(1)
+	}
+
+	if data, ok := result["data"].(map[string]interface{}); ok {
+		var accountType string
+		if orgFound, ok := data["orgFound"].(bool); ok && orgFound {
+			accountType = "org"
+		} else if personalProfile, ok := data["personalProfile"].(bool); ok && personalProfile {
+			accountType = "user"
+		} else {
+			accountType = "unknown"
+		}
+
+		filteredResult := map[string]interface{}{
+			"limits": data["apiCallLimits"],
+			"type":   accountType,
+		}
+		filteredData, _ := json.MarshalIndent(filteredResult, "", "  ")
+		fmt.Println(string(filteredData))
+	} else {
+		fmt.Println("Error: Invalid response format")
+	}
+}
+
+func compareEndpoint(id1, id2 string) {
+	endpoint := fmt.Sprintf("%s/compare", apiBaseURL)
+
+	requestBody, err := json.Marshal(map[string]string{
+		"id1": id1,
+		"id2": id2,
+	})
+	if err != nil {
+		fmt.Println("Error creating request body:", err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(requestBody))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Unexpected status code: %d\n", resp.StatusCode)
+		body, _ := ioutil.ReadAll(resp.Body)
+		fmt.Printf("Response: %s\n", string(body))
+		return
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+
+	var diffItems []DiffItem
+	err = json.Unmarshal(body, &diffItems)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		fmt.Printf("Response: %s\n", string(body))
+		return
+	}
+
+	addedCount := 0
+	removedCount := 0
+
+	fmt.Println("Summary of changes:")
+	for _, item := range diffItems {
+		if item.Added {
+			addedCount++
+			if addedCount <= 20 { // Print the first 20 additions
+				fmt.Printf("+ %s\n", item.Value)
+			}
+		} else if item.Removed {
+			removedCount++
+			if removedCount <= 20 { // Print the first 20 removals
+				fmt.Printf("- %s\n", item.Value)
+			}
+		}
+	}
+
+	fmt.Printf("\nTotal additions: %d\n", addedCount)
+	fmt.Printf("Total removals: %d\n", removedCount)
+	if addedCount > 5 {
+		fmt.Printf("(Only the first 20 additions are shown)\n")
+	}
+	if removedCount > 5 {
+		fmt.Printf("(Only the first 20 removals are shown)\n")
 	}
 }
