@@ -16,9 +16,11 @@ func main() {
 	getAllResults := flag.String("automationData", "", "Get all automation results")
 	getScannerResultsFlag := flag.Bool("scannerData", false, "Get scanner results")
 	cron := flag.String("cron", "", "Set cronjob.")
-	cronNotification := flag.String("notifications", "", "Set cronjob notification.")
+	cronNotification := flag.String("notifications", "", "Set cronjob notification channel.")
 	cronTime := flag.Int64("time", 0, "Set cronjob time.")
-	cronType := flag.String("type", "", "Set type of cronjob.")
+	cronType := flag.String("vulnerabilitiesType", "", "Set type[URLs, Analysis, Scanner] of cronjob.")
+	cronDomains := flag.String("domains", "", "Set domains for cronjob.")
+	cronDomainsNotify := flag.String("domainsNotify", "", "Set notify(true/false) for each domain for cronjob.")
 	viewurls := flag.Bool("urls", false, "view all urls")
 	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
 	wordsFlag := flag.String("words", "", "Comma-separated list of words to include in the scan")
@@ -38,7 +40,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Options:\n")
 		flag.PrintDefaults()
 	}
- 
+
 	flag.Parse()
 
 	// Handle API key
@@ -81,36 +83,36 @@ func main() {
 			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
 		}
 		getEmails(domains)
-	case *s3domains !="":
+	case *s3domains != "":
 		domains := strings.Split(*s3domains, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
 		}
 		getS3Domains(domains)
-	case *ip !="":
+	case *ip != "":
 		domains := strings.Split(*ip, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
 		}
 		getAllIps(domains)
-	case *domainUrl !="":
+	case *domainUrl != "":
 		domains := strings.Split(*domainUrl, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
 		}
-	getDomainUrls(domains)
+		getDomainUrls(domains)
 	case *apiPath != "": // Split the comma-separated string into a slice
-	domains := strings.Split(*apiPath, ",")
-	for i, domain := range domains {
-		domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
-	}
-	getApiPaths(domains)
+		domains := strings.Split(*apiPath, ",")
+		for i, domain := range domains {
+			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+		}
+		getApiPaths(domains)
 	case *getScannerResultsFlag:
 		getScannerResults()
 	case *scanUrl != "":
 		rescanUrlEndpoint(*scanUrl)
 	case *cron == "start":
-		StartCron(*cronNotification, *cronTime, *cronType)
+		StartCron(*cronNotification, *cronTime, *cronType, *cronDomains, *cronDomainsNotify)
 	case *cron == "stop":
 		StopCron()
 	case *compareFlag != "":
@@ -121,7 +123,7 @@ func main() {
 		}
 		compareEndpoint(strings.TrimSpace(ids[0]), strings.TrimSpace(ids[1]))
 	case *cron == "update":
-		UpdateCron(*cronNotification, *cronType)
+		UpdateCron(*cronNotification, *cronType, *cronDomains, *cronDomainsNotify, *cronTime)
 	case *getAllResults != "":
 		parts := strings.Split(*getAllResults, ",")
 		if len(parts) != 3 {
