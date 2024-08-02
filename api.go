@@ -9,6 +9,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"os"
 	"path/filepath"
 	"strings"
@@ -195,12 +196,23 @@ func uploadFileEndpoint(filePath string) {
 	}
 	defer file.Close()
 
+	fileInfo, err := file.Stat()
+	if err != nil {
+		log.Fatalf("Error getting file info: %v", err)
+	}
+	if fileInfo.Size() > 10*1024*1024 {
+		log.Fatalf("File size exceeds limit")
+	}
+
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", filepath.Base(filePath)))
+	h.Set("Content-Type", "text/plain")
+	part, err := writer.CreatePart(h)
 	if err != nil {
-		log.Fatalf("Error creating form file: %v", err)
+		log.Fatalf("Error creating form part: %v", err)
 	}
 
 	_, err = io.Copy(part, file)
@@ -220,14 +232,11 @@ func uploadFileEndpoint(filePath string) {
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
 
-	log.Printf("Sending request to: %s", endpoint)
-	log.Printf("Request headers:")
-	for k, v := range req.Header {
-		log.Printf("%s: %s", k, v)
-	}
-
+	log.Printf("File being uploaded: %s", filepath.Base(filePath))
 	log.Printf("Request body length: %d bytes", body.Len())
+	log.Printf("Request body content (first 200 bytes): %s", body.String()[:min(200, body.Len())])
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -241,12 +250,21 @@ func uploadFileEndpoint(filePath string) {
 		log.Fatalf("Error reading response: %v", err)
 	}
 
-	log.Printf("Response status: %s", resp.Status)
-	log.Printf("Response body: %s", string(responseBody))
-
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		log.Fatalf("Upload failed with status code: %d", resp.StatusCode)
 	}
+
+	var prettyJSON bytes.Buffer
+	if err := json.Indent(&prettyJSON, responseBody, "", "    "); err != nil {
+		log.Fatalf("Failed to format JSON response: %v", err)
+	}
+	log.Printf("Response body: %s", prettyJSON.String())
+}
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func getAllAutomationResults(input, inputType string, showOnly string) {
