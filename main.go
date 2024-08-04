@@ -20,6 +20,7 @@ func main() {
 	cronTime := flag.Int64("time", 0, "Set cronjob time.")
 	cronType := flag.String("type", "", "Set type of cronjob.")
 	viewurls := flag.Bool("urls", false, "view all urls")
+	viewurlsSize := flag.Int("size", 10, "Number of URLs to fetch")
 	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
 	wordsFlag := flag.String("words", "", "Comma-separated list of words to include in the scan")
 
@@ -38,7 +39,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Options:\n")
 		flag.PrintDefaults()
 	}
- 
+
 	flag.Parse()
 
 	// Handle API key
@@ -69,7 +70,7 @@ func main() {
 	case *uploadFile != "":
 		uploadFileEndpoint(*uploadFile)
 	case *viewurls:
-		viewUrls()
+		viewUrls(*viewurlsSize)
 	case *viewfiles:
 		viewFiles()
 	case *uploadUrl != "":
@@ -81,30 +82,30 @@ func main() {
 			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
 		}
 		getEmails(domains)
-	case *s3domains !="":
+	case *s3domains != "":
 		domains := strings.Split(*s3domains, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
 		}
 		getS3Domains(domains)
-	case *ip !="":
+	case *ip != "":
 		domains := strings.Split(*ip, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
 		}
 		getAllIps(domains)
-	case *domainUrl !="":
+	case *domainUrl != "":
 		domains := strings.Split(*domainUrl, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
 		}
-	getDomainUrls(domains)
+		getDomainUrls(domains)
 	case *apiPath != "": // Split the comma-separated string into a slice
-	domains := strings.Split(*apiPath, ",")
-	for i, domain := range domains {
-		domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
-	}
-	getApiPaths(domains)
+		domains := strings.Split(*apiPath, ",")
+		for i, domain := range domains {
+			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+		}
+		getApiPaths(domains)
 	case *getScannerResultsFlag:
 		getScannerResults()
 	case *scanUrl != "":
