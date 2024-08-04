@@ -16,9 +16,11 @@ func main() {
 	getAllResults := flag.String("automationData", "", "Get all automation results")
 	getScannerResultsFlag := flag.Bool("scannerData", false, "Get scanner results")
 	cron := flag.String("cron", "", "Set cronjob.")
-	cronNotification := flag.String("notifications", "", "Set cronjob notification.")
+	cronNotification := flag.String("notifications", "", "Set cronjob notification channel.")
 	cronTime := flag.Int64("time", 0, "Set cronjob time.")
-	cronType := flag.String("type", "", "Set type of cronjob.")
+	cronType := flag.String("vulnerabilitiesType", "", "Set type[URLs, Analysis, Scanner] of cronjob.")
+	cronDomains := flag.String("domains", "", "Set domains for cronjob.")
+	cronDomainsNotify := flag.String("domainsNotify", "", "Set notify(true/false) for each domain for cronjob.")
 	viewurls := flag.Bool("urls", false, "view all urls")
 	viewurlsSize := flag.Int("size", 10, "Number of URLs to fetch")
 	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
@@ -111,7 +113,7 @@ func main() {
 	case *scanUrl != "":
 		rescanUrlEndpoint(*scanUrl)
 	case *cron == "start":
-		StartCron(*cronNotification, *cronTime, *cronType)
+		StartCron(*cronNotification, *cronTime, *cronType, *cronDomains, *cronDomainsNotify)
 	case *cron == "stop":
 		StopCron()
 	case *compareFlag != "":
@@ -122,7 +124,7 @@ func main() {
 		}
 		compareEndpoint(strings.TrimSpace(ids[0]), strings.TrimSpace(ids[1]))
 	case *cron == "update":
-		UpdateCron(*cronNotification, *cronType)
+		UpdateCron(*cronNotification, *cronType, *cronDomains, *cronDomainsNotify, *cronTime)
 	case *getAllResults != "":
 		parts := strings.Split(*getAllResults, ",")
 		if len(parts) != 3 {
