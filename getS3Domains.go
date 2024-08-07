@@ -60,19 +60,18 @@ func getS3Domains(domains []string) {
 		return
 	}
 
-	s3Domains, ok := response["s3Domains"].([]interface{})
-	if !ok {
-		fmt.Println("Error: 's3Domains' field not found or not in expected format")
-		return
-	}
+	// s3Domains, ok := response["s3Domains"].([]interface{})
+	// if !ok {
+	// 	fmt.Println("Error: 's3Domains' field not found or not in expected format")
+	// 	return
+	// }
 
 	// Print API paths in plain text
 	//fmt.Println("API Paths:")
-	for _, path := range s3Domains {
-		if pathStr, ok := path.(string); ok {
-			fmt.Println(pathStr)
-		} else {
-			fmt.Println("Error: Invalid type in 's3Domains'")
-		}
+	prettyJSON, err := json.MarshalIndent(response, "", "  ")
+	if err != nil {
+		fmt.Println("Error formatting JSON:", err)
+		return
 	}
+	fmt.Println(string(prettyJSON))
 }

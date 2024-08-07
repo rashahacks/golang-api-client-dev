@@ -126,12 +126,7 @@ func main() {
 	case *cron == "update":
 		UpdateCron(*cronNotification, *cronType, *cronDomains, *cronDomainsNotify, *cronTime)
 	case *getAllResults != "":
-		parts := strings.Split(*getAllResults, ",")
-		if len(parts) != 3 {
-			fmt.Println("Invalid format for automationData. Use: input,inputType,showOnly")
-			os.Exit(1)
-		}
-		getAllAutomationResults(parts[0], parts[1], parts[2])
+		getAllAutomationResults(*getAllResults)
 	case *scanDomainFlag != "":
 		words := []string{}
 		if *wordsFlag != "" {

@@ -60,19 +60,26 @@ func getApiPaths(domains []string) {
 		return
 	}
 
-	apiPaths, ok := response["apiPaths"].([]interface{})
-	if !ok {
-		fmt.Println("Error: 'apiPaths' field not found or not in expected format")
+	// apiPaths, ok := response["apiPaths"].([]interface{})
+	// if !ok {
+	// 	fmt.Println("Error: 'apiPaths' field not found or not in expected format")
+	// 	return
+	// }
+
+	// // Print API paths in plain text
+	// //fmt.Println("API Paths:")
+	// for _, path := range apiPaths {
+	// 	if pathStr, ok := path.(string); ok {
+	// 		fmt.Println(pathStr)
+	// 	} else {
+	// 		fmt.Println("Error: Invalid type in 'apiPaths'")
+	// 	}
+	// }
+
+	prettyJSON, err := json.MarshalIndent(response, "", "  ")
+	if err != nil {
+		fmt.Println("Error formatting JSON:", err)
 		return
 	}
-
-	// Print API paths in plain text
-	//fmt.Println("API Paths:")
-	for _, path := range apiPaths {
-		if pathStr, ok := path.(string); ok {
-			fmt.Println(pathStr)
-		} else {
-			fmt.Println("Error: Invalid type in 'apiPaths'")
-		}
-	}
+	fmt.Println(string(prettyJSON))
 }

@@ -56,18 +56,24 @@ func getDomainUrls(domains []string) {
 		return
 	}
 
-	getUrls, ok := response["getUrls"].([]interface{})
-	if !ok {
-		fmt.Println("Error: 'getUrls' field not found or not in expected format")
+	// getUrls, ok := response["getUrls"].([]interface{})
+	// if !ok {
+	// 	fmt.Println("Error: 'getUrls' field not found or not in expected format")
+	// 	return
+	// }
+
+	// // Print URLs in plain text
+	// for _, url := range getUrls {
+	// 	if urlStr, ok := url.(string); ok {
+	// 		fmt.Println(urlStr)
+	// 	} else {
+	// 		fmt.Println("Error: Invalid type in 'getUrls'")
+	// 	}
+	// }
+	prettyJSON, err := json.MarshalIndent(response, "", "  ")
+	if err != nil {
+		fmt.Println("Error formatting JSON:", err)
 		return
 	}
-
-	// Print URLs in plain text
-	for _, url := range getUrls {
-		if urlStr, ok := url.(string); ok {
-			fmt.Println(urlStr)
-		} else {
-			fmt.Println("Error: Invalid type in 'getUrls'")
-		}
-	}
+	fmt.Println(string(prettyJSON))
 }

@@ -21,7 +21,7 @@ func viewFiles() {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		fmt.Errorf("failed to create request: %v", err)
+		fmt.Printf("failed to create request: %v", err)
 		return
 	}
 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))

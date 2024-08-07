@@ -46,9 +46,6 @@ func getAllIps(domains []string) {
 		return
 	}
 
-	// fmt.Println("Raw Response Body:")
-	// fmt.Println(string(body))
-
 	// Parse response
 	var response map[string]interface{}
 	err = json.Unmarshal(body, &response)
@@ -89,6 +86,12 @@ func getAllIps(domains []string) {
 	} else {
 		fmt.Println("Error: 'ipAddresses' field not found or not in expected format")
 	}
+
+	// Pretty print the response
+	prettyJSON, err := json.MarshalIndent(response, "", "  ")
+	if err != nil {
+		fmt.Println("Error formatting JSON:", err)
+		return
+	}
+	fmt.Println(string(prettyJSON))
 }
-
-
