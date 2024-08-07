@@ -145,6 +145,49 @@ func rescanUrlEndpoint(scanId string) {
 	fmt.Println(string(prettyJSON))
 }
 
+func getDomains() {
+	endpoint := fmt.Sprintf("%s/getDomains", apiBaseURL)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+
+	var domains []string
+	err = json.Unmarshal(body, &domains)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return
+	}
+
+	// Pretty print JSON
+	prettyJSON, err := json.MarshalIndent(domains, "", "  ")
+	if err != nil {
+		fmt.Println("Error formatting JSON:", err)
+		return
+	}
+
+	fmt.Println(string(prettyJSON))
+}
+
 func scanFileEndpoint(fileId string) {
 	endpoint := fmt.Sprintf("%s/scanFile/%s", apiBaseURL, fileId)
 

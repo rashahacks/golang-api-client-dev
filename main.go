@@ -25,6 +25,7 @@ func main() {
 	viewurlsSize := flag.Int("size", 10, "Number of URLs to fetch")
 	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
 	wordsFlag := flag.String("words", "", "Comma-separated list of words to include in the scan")
+	getDomainsFlag := flag.Bool("getDomains", false, "Get all domains for the user")
 
 	usageFlag := flag.Bool("usage", false, "View user profile")
 	viewfiles := flag.Bool("files", false, "view all files")
@@ -116,6 +117,8 @@ func main() {
 		StartCron(*cronNotification, *cronTime, *cronType, *cronDomains, *cronDomainsNotify)
 	case *cron == "stop":
 		StopCron()
+	case *getDomainsFlag:
+		getDomains()
 	case *compareFlag != "":
 		ids := strings.Split(*compareFlag, ",")
 		if len(ids) != 2 {
