@@ -48,7 +48,6 @@ func main() {
 	// Handle API key
 	if *apiKeyFlag != "" {
 		setAPIKey(*apiKeyFlag)
-		fmt.Println("Using provided API key.")
 	} else {
 		err := loadAPIKey()
 		if err != nil {
@@ -56,7 +55,6 @@ func main() {
 			fmt.Println("Please provide an API key using the -apikey flag.")
 			os.Exit(1)
 		}
-		fmt.Println("Using API key from credentials file.")
 	}
 
 	// Check if any action flags were provided
