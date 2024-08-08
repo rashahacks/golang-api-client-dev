@@ -6,3 +6,6 @@
 
 # Credentials
 .jsmon/credentials
+
+# Configuration
+config.go

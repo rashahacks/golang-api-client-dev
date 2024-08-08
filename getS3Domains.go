@@ -30,9 +30,6 @@ func getS3Domains(domains []string) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
 
-	// fmt.Printf("Sending request to: %s\n", endpoint)
-	// fmt.Printf("Request body: %s\n", requestBody)
-
 	// Send request
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -49,9 +46,6 @@ func getS3Domains(domains []string) {
 		return
 	}
 
-	fmt.Println("Raw Response Body:")
-	fmt.Println(string(body))
-
 	// Parse response
 	var response map[string]interface{}
 	err = json.Unmarshal(body, &response)
@@ -60,18 +54,21 @@ func getS3Domains(domains []string) {
 		return
 	}
 
-	// s3Domains, ok := response["s3Domains"].([]interface{})
-	// if !ok {
-	// 	fmt.Println("Error: 's3Domains' field not found or not in expected format")
-	// 	return
-	// }
-
-	// Print API paths in plain text
-	//fmt.Println("API Paths:")
-	prettyJSON, err := json.MarshalIndent(response, "", "  ")
-	if err != nil {
-		fmt.Println("Error formatting JSON:", err)
-		return
+	// Extract and print the data in the desired format
+	message, ok := response["message"].(string)
+	if ok {
+		fmt.Println(message)
 	}
-	fmt.Println(string(prettyJSON))
+
+	s3Domains, ok := response["s3Domains"].([]interface{})
+	if ok && len(s3Domains) > 0 {
+		fmt.Println("S3 Domains:")
+		for _, domain := range s3Domains {
+			if domainStr, ok := domain.(string); ok {
+				fmt.Println(domainStr)
+			}
+		}
+	} else {
+		fmt.Println("No S3 Domains found")
+	}
 }

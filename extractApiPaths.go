@@ -30,9 +30,6 @@ func getApiPaths(domains []string) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
 
-	// fmt.Printf("Sending request to: %s\n", endpoint)
-	// fmt.Printf("Request body: %s\n", requestBody)
-
 	// Send request
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -49,9 +46,6 @@ func getApiPaths(domains []string) {
 		return
 	}
 
-	//fmt.Println("Raw Response Body:")
-	//fmt.Println(string(body))
-
 	// Parse response
 	var response map[string]interface{}
 	err = json.Unmarshal(body, &response)
@@ -60,26 +54,17 @@ func getApiPaths(domains []string) {
 		return
 	}
 
-	// apiPaths, ok := response["apiPaths"].([]interface{})
-	// if !ok {
-	// 	fmt.Println("Error: 'apiPaths' field not found or not in expected format")
-	// 	return
-	// }
-
-	// // Print API paths in plain text
-	// //fmt.Println("API Paths:")
-	// for _, path := range apiPaths {
-	// 	if pathStr, ok := path.(string); ok {
-	// 		fmt.Println(pathStr)
-	// 	} else {
-	// 		fmt.Println("Error: Invalid type in 'apiPaths'")
-	// 	}
-	// }
-
-	prettyJSON, err := json.MarshalIndent(response, "", "  ")
-	if err != nil {
-		fmt.Println("Error formatting JSON:", err)
-		return
+	// Access and print API paths
+	if apiPaths, ok := response["apiPaths"].([]interface{}); ok {
+		fmt.Println("API Paths:")
+		for _, path := range apiPaths {
+			if pathStr, ok := path.(string); ok {
+				fmt.Println(pathStr)
+			} else {
+				fmt.Println("Error: Invalid type in 'apiPaths'")
+			}
+		}
+	} else {
+		fmt.Println("Error: 'apiPaths' field not found or not in expected format")
 	}
-	fmt.Println(string(prettyJSON))
 }

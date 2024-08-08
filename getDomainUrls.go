@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// Function to get domain URLs
 func getDomainUrls(domains []string) {
 	endpoint := fmt.Sprintf("%s/getDomainsUrls", apiBaseURL)
 	requestBody, err := json.Marshal(map[string]interface{}{
@@ -44,10 +45,6 @@ func getDomainUrls(domains []string) {
 		return
 	}
 
-	// Print raw response for debugging
-	// fmt.Println("Raw Response Body:")
-	// fmt.Println(string(body))
-
 	// Parse response
 	var response map[string]interface{}
 	err = json.Unmarshal(body, &response)
@@ -56,24 +53,28 @@ func getDomainUrls(domains []string) {
 		return
 	}
 
-	// getUrls, ok := response["getUrls"].([]interface{})
-	// if !ok {
-	// 	fmt.Println("Error: 'getUrls' field not found or not in expected format")
-	// 	return
-	// }
+	// Extract data
+	if data, ok := response["data"].(map[string]interface{}); ok {
+		fmt.Println("Extracted URL and Domain:")
 
-	// // Print URLs in plain text
-	// for _, url := range getUrls {
-	// 	if urlStr, ok := url.(string); ok {
-	// 		fmt.Println(urlStr)
-	// 	} else {
-	// 		fmt.Println("Error: Invalid type in 'getUrls'")
-	// 	}
-	// }
-	prettyJSON, err := json.MarshalIndent(response, "", "  ")
-	if err != nil {
-		fmt.Println("Error formatting JSON:", err)
-		return
+		// Print extracted domains
+		if extractedDomains, ok := data["extractedDomains"].([]interface{}); ok {
+			for _, domain := range extractedDomains {
+				if domainStr, ok := domain.(string); ok {
+					fmt.Println(domainStr)
+				}
+			}
+		}
+
+		// Print extracted URLs
+		if extractedUrls, ok := data["extractedUrls"].([]interface{}); ok {
+			for _, url := range extractedUrls {
+				if urlStr, ok := url.(string); ok {
+					fmt.Println(urlStr)
+				}
+			}
+		}
+	} else {
+		fmt.Println("Error: 'data' field not found or not in expected format")
 	}
-	fmt.Println(string(prettyJSON))
 }
