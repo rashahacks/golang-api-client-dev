@@ -431,45 +431,53 @@ func automateScanDomain(domain string, words []string) {
 	}
 	defer resp.Body.Close()
 
-	responseBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("failed to read response body: %v\n", err)
-		return
-	}
+	decoder := json.NewDecoder(resp.Body)
+	for {
+		var response map[string]interface{}
+		err := decoder.Decode(&response)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			fmt.Printf("failed to unmarshal JSON response: %v\n", err)
+			return
+		}
 
-	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("non-200 response: %s\n", responseBody)
-		return
+		printFormattedResponse(response)
 	}
-
-	var response AutomateScanDomainResponse
-	err = json.Unmarshal(responseBody, &response)
-	if err != nil {
-		fmt.Printf("failed to unmarshal JSON response: %v\n", err)
-		return
-	}
-
-	printFormattedResponse(response)
 }
 
-func printFormattedResponse(response AutomateScanDomainResponse) {
-	fmt.Println("Message:", response.Message)
-	fmt.Println("File ID:", response.FileId)
-	fmt.Println("Trimmed Domain:", response.TrimmedDomain)
+func printFormattedResponse(response map[string]interface{}) {
+	fmt.Println("Message:", response["message"])
+	fmt.Println("File ID:", response["fileId"])
+	fmt.Println("Trimmed Domain:", response["trimmedDomain"])
 
-	fmt.Println("\nScan Response:")
-	fmt.Println("  Message:", response.ScanResponse.Message)
+	scanResponse, ok := response["scanResponse"].(map[string]interface{})
+	if ok {
+		fmt.Println("\nScan Response:")
+		fmt.Println("  Message:", scanResponse["message"])
 
-	fmt.Println("\n  Analysis Result:")
-	fmt.Println("    Message:", response.ScanResponse.AnalysisResult.Message)
-	fmt.Println("    Total Chunks:", response.ScanResponse.AnalysisResult.TotalChunks)
+		analysisResult, ok := scanResponse["analysis_result"].(map[string]interface{})
+		if ok {
+			fmt.Println("\n  Analysis Result:")
+			fmt.Println("    Message:", analysisResult["message"])
+			fmt.Println("    Total Chunks:", analysisResult["totalChunks"])
+		}
 
-	fmt.Println("\n  Module Scan Result:")
-	fmt.Println("    Message:", response.ScanResponse.ModuleScanResult.Message)
-	for _, module := range response.ScanResponse.ModuleScanResult.Data {
-		fmt.Println("    Module Name:", module.ModuleName)
-		fmt.Println("    URL:", module.URL)
-		fmt.Println()
+		moduleScanResult, ok := scanResponse["modulescan_result"].(map[string]interface{})
+		if ok {
+			fmt.Println("\n  Module Scan Result:")
+			fmt.Println("    Message:", moduleScanResult["message"])
+			modules, ok := moduleScanResult["data"].([]interface{})
+			if ok {
+				for _, module := range modules {
+					m := module.(map[string]interface{})
+					fmt.Println("    Module Name:", m["moduleName"])
+					fmt.Println("    URL:", m["url"])
+					fmt.Println()
+				}
+			}
+		}
 	}
 }
 
