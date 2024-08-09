@@ -447,6 +447,39 @@ func automateScanDomain(domain string, words []string) {
 	}
 }
 
+// func printFormattedResponse(response map[string]interface{}) {
+// 	fmt.Println("Message:", response["message"])
+// 	fmt.Println("File ID:", response["fileId"])
+// 	fmt.Println("Trimmed Domain:", response["trimmedDomain"])
+
+// 	scanResponse, ok := response["scanResponse"].(map[string]interface{})
+// 	if ok {
+// 		fmt.Println("\nScan Response:")
+// 		fmt.Println("  Message:", scanResponse["message"])
+
+// 		analysisResult, ok := scanResponse["analysis_result"].(map[string]interface{})
+// 		if ok {
+// 			fmt.Println("\n  Analysis Result:")
+// 			fmt.Println("    Message:", analysisResult["message"])
+// 			fmt.Println("    Total Chunks:", analysisResult["totalChunks"])
+// 		}
+
+//			moduleScanResult, ok := scanResponse["modulescan_result"].(map[string]interface{})
+//			if ok {
+//				fmt.Println("\n  Module Scan Result:")
+//				fmt.Println("    Message:", moduleScanResult["message"])
+//				modules, ok := moduleScanResult["data"].([]interface{})
+//				if ok {
+//					for _, module := range modules {
+//						m := module.(map[string]interface{})
+//						fmt.Println("    Module Name:", m["moduleName"])
+//						fmt.Println("    URL:", m["url"])
+//						fmt.Println()
+//					}
+//				}
+//			}
+//		}
+//	}
 func printFormattedResponse(response map[string]interface{}) {
 	fmt.Println("Message:", response["message"])
 	fmt.Println("File ID:", response["fileId"])
@@ -454,33 +487,25 @@ func printFormattedResponse(response map[string]interface{}) {
 
 	scanResponse, ok := response["scanResponse"].(map[string]interface{})
 	if ok {
-		fmt.Println("\nScan Response:")
-		fmt.Println("  Message:", scanResponse["message"])
+		fmt.Println("\nResult")
+		fmt.Println("", scanResponse["message"])
 
 		analysisResult, ok := scanResponse["analysis_result"].(map[string]interface{})
 		if ok {
 			fmt.Println("\n  Analysis Result:")
-			fmt.Println("    Message:", analysisResult["message"])
+			fmt.Println("    ", analysisResult["message"])
 			fmt.Println("    Total Chunks:", analysisResult["totalChunks"])
+			fmt.Println("    Use -automationData flag to view all automation data for this domain")
 		}
 
 		moduleScanResult, ok := scanResponse["modulescan_result"].(map[string]interface{})
 		if ok {
 			fmt.Println("\n  Module Scan Result:")
-			fmt.Println("    Message:", moduleScanResult["message"])
-			modules, ok := moduleScanResult["data"].([]interface{})
-			if ok {
-				for _, module := range modules {
-					m := module.(map[string]interface{})
-					fmt.Println("    Module Name:", m["moduleName"])
-					fmt.Println("    URL:", m["url"])
-					fmt.Println()
-				}
-			}
+			fmt.Println("    ", moduleScanResult["message"])
+			fmt.Println("    Use -scannerData flag to view module scanner data for this domain")
 		}
 	}
 }
-
 func callViewProfile() {
 	endpoint := fmt.Sprintf("%s/viewProfile", apiBaseURL)
 
