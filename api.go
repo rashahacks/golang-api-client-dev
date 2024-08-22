@@ -10,9 +10,11 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type DiffItem struct {
@@ -52,11 +54,22 @@ type AutomateScanDomainResponse struct {
 	ScanResponse  ScanResponse `json:"scanResponse"`
 }
 
-func uploadUrlEndpoint(url string) {
+func uploadUrlEndpoint(url string, customHeaders []string) {
 	endpoint := fmt.Sprintf("%s/uploadUrl", apiBaseURL)
 
-	requestBody, err := json.Marshal(map[string]string{
-		"url": url,
+	headerObjects := make([]map[string]string, 0)
+	for _, header := range customHeaders {
+		parts := strings.SplitN(header, ":", 2)
+		if len(parts) == 2 {
+			headerObjects = append(headerObjects, map[string]string{
+				strings.TrimSpace(parts[0]): strings.TrimSpace(parts[1]),
+			})
+		}
+	}
+
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"url":     url,
+		"headers": headerObjects,
 	})
 	if err != nil {
 		fmt.Println("Error creating request body:", err)
@@ -86,22 +99,28 @@ func uploadUrlEndpoint(url string) {
 		return
 	}
 
-	var result interface{}
+	var result map[string]interface{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		fmt.Println("Error parsing JSON:", err)
 		return
 	}
-
-	prettyJSON, err := json.MarshalIndent(result, "", "  ")
-	if err != nil {
-		fmt.Println("Error formatting JSON:", err)
-		return
+	fmt.Println("URL Upload Result:")
+	fmt.Println("------------------")
+	if jsmonId, ok := result["jsmonId"].(string); ok {
+		fmt.Printf("JSMON ID: %s\n", jsmonId)
 	}
-
-	fmt.Println(string(prettyJSON))
+	if hash, ok := result["hash"].(string); ok {
+		fmt.Printf("Hash: %s\n", hash)
+	}
+	if createdAt, ok := result["createdAt"].(float64); ok {
+		timestamp := time.Unix(int64(createdAt), 0)
+		fmt.Printf("Created At: %s\n", timestamp.Format(time.RFC3339))
+	}
+	if message, ok := result["message"].(string); ok {
+		fmt.Printf("Message: %s\n", message)
+	}
 }
-
 func rescanUrlEndpoint(scanId string) {
 	endpoint := fmt.Sprintf("%s/rescanURL/%s", apiBaseURL, scanId)
 
@@ -230,8 +249,35 @@ func scanFileEndpoint(fileId string) {
 	fmt.Println(string(prettyJSON))
 }
 
-func uploadFileEndpoint(filePath string) {
+func uploadFileEndpoint(filePath string, headers []string) {
 	endpoint := fmt.Sprintf("%s/uploadFile", apiBaseURL)
+
+	headerMaps := []map[string]string{}
+
+	// Parse headers into the correct format
+	for _, header := range headers {
+		parts := strings.SplitN(header, ":", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			headerMaps = append(headerMaps, map[string]string{key: value})
+		}
+	}
+
+	headersJSON, err := json.Marshal(headerMaps)
+	if err != nil {
+		log.Fatalf("Error marshaling headers to JSON: %v", err)
+	}
+
+	// Create query parameters
+	queryParams := url.Values{}
+	queryParams.Add("headers", string(headersJSON))
+
+	// Append query parameters to the endpoint URL
+	endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
+
+	// Log the final endpoint URL for debugging
+	log.Printf("Final endpoint URL: %s", endpoint)
 
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -297,12 +343,29 @@ func uploadFileEndpoint(filePath string) {
 		log.Fatalf("Upload failed with status code: %d", resp.StatusCode)
 	}
 
-	var prettyJSON bytes.Buffer
-	if err := json.Indent(&prettyJSON, responseBody, "", "    "); err != nil {
-		log.Fatalf("Failed to format JSON response: %v", err)
+	var result map[string]interface{}
+	if err := json.Unmarshal(responseBody, &result); err != nil {
+		log.Fatalf("Failed to parse JSON response: %v", err)
 	}
-	log.Printf("Response body: %s", prettyJSON.String())
+
+	// Print the response in a more user-friendly format
+	fmt.Println("File Upload Result:")
+	fmt.Println("-------------------")
+	if jsmonId, ok := result["jsmonId"].(string); ok {
+		fmt.Printf("JSMON ID: %s\n", jsmonId)
+	}
+	if hash, ok := result["hash"].(string); ok {
+		fmt.Printf("Hash: %s\n", hash)
+	}
+	if createdAt, ok := result["createdAt"].(float64); ok {
+		timestamp := time.Unix(int64(createdAt), 0)
+		fmt.Printf("Created At: %s\n", timestamp.Format(time.RFC3339))
+	}
+	if message, ok := result["message"].(string); ok {
+		fmt.Printf("Message: %s\n", message)
+	}
 }
+
 func min(a, b int) int {
 	if a < b {
 		return a

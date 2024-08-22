@@ -7,6 +7,16 @@ import (
 	"strings"
 )
 
+type stringSliceFlag []string
+
+func (s *stringSliceFlag) String() string {
+	return strings.Join(*s, ", ")
+}
+
+func (s *stringSliceFlag) Set(value string) error {
+	*s = append(*s, value)
+	return nil
+}
 func main() {
 	scanUrl := flag.String("scanUrl", "", "URL or scan ID to rescan")
 	uploadUrl := flag.String("uploadUrl", "", "URL to upload for scanning")
@@ -26,7 +36,9 @@ func main() {
 	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
 	wordsFlag := flag.String("words", "", "Comma-separated list of words to include in the scan")
 	getDomainsFlag := flag.Bool("getDomains", false, "Get all domains for the user")
-
+	var headers stringSliceFlag
+	flag.Var(&headers, "H", "Custom headers in the format 'Key: Value' (can be used multiple times)")
+	flag.Parse()
 	usageFlag := flag.Bool("usage", false, "View user profile")
 	viewfiles := flag.Bool("files", false, "view all files")
 	viewEmails := flag.String("Emails", "", "view all Emails")
@@ -69,13 +81,13 @@ func main() {
 	case *scanFileId != "":
 		scanFileEndpoint(*scanFileId)
 	case *uploadFile != "":
-		uploadFileEndpoint(*uploadFile)
+		uploadFileEndpoint(*uploadFile, headers)
 	case *viewurls:
 		viewUrls(*viewurlsSize)
 	case *viewfiles:
 		viewFiles()
 	case *uploadUrl != "":
-		uploadUrlEndpoint(*uploadUrl)
+		uploadUrlEndpoint(*uploadUrl, headers)
 	case *viewEmails != "":
 		// Extract emails for provided domains
 		domains := strings.Split(*viewEmails, ",")
