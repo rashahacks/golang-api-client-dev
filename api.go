@@ -376,10 +376,10 @@ func min(a, b int) int {
 	return b
 }
 
-func getAllAutomationResults(input string) {
+func getAllAutomationResults(input string, size int) {
 	endpoint := fmt.Sprintf("%s/getAllAutomationResults", apiBaseURL)
 
-	url := fmt.Sprintf("%s?showonly=all&inputType=domain&input=%s", endpoint, input)
+	url := fmt.Sprintf("%s?showonly=all&inputType=domain&input=%s&size=%d", endpoint, input, size)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -418,7 +418,6 @@ func getAllAutomationResults(input string) {
 
 	fmt.Println(string(prettyJSON))
 }
-
 func getScannerResults() {
 	endpoint := fmt.Sprintf("%s/getScannerResults", apiBaseURL)
 

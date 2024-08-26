@@ -24,6 +24,7 @@ func main() {
 	scanFileId := flag.String("scanFile", "", "File ID to scan")
 	uploadFile := flag.String("uploadFile", "", "File to upload giving path to the file locally.")
 	getAllResults := flag.String("automationData", "", "Get all automation results")
+	size := flag.Int("size", 10000, "Number of results to fetch (default 10000)")
 	getScannerResultsFlag := flag.Bool("scannerData", false, "Get scanner results")
 	cron := flag.String("cron", "", "Set cronjob.")
 	cronNotification := flag.String("notifications", "", "Set cronjob notification channel.")
@@ -32,22 +33,23 @@ func main() {
 	cronDomains := flag.String("domains", "", "Set domains for cronjob.")
 	cronDomainsNotify := flag.String("domainsNotify", "", "Set notify(true/false) for each domain for cronjob.")
 	viewurls := flag.Bool("urls", false, "view all urls")
-	viewurlsSize := flag.Int("size", 10, "Number of URLs to fetch")
+	viewurlsSize := flag.Int("urlSize", 10, "Number of URLs to fetch")
 	scanDomainFlag := flag.String("scanDomain", "", "Domain to automate scan")
 	wordsFlag := flag.String("words", "", "Comma-separated list of words to include in the scan")
+
 	getDomainsFlag := flag.Bool("getDomains", false, "Get all domains for the user")
 	var headers stringSliceFlag
 	flag.Var(&headers, "H", "Custom headers in the format 'Key: Value' (can be used multiple times)")
-	flag.Parse()
+
 	usageFlag := flag.Bool("usage", false, "View user profile")
 	viewfiles := flag.Bool("files", false, "view all files")
-	viewEmails := flag.String("Emails", "", "view all Emails")
-	s3domains := flag.String("S3Domains", "", "get all S3Domains")
-	ip := flag.String("ips", "", "get all Ips")
-	domainUrl := flag.String("DomainUrls", "", "get DomainUrls")
-	apiPath := flag.String("api", "", "get the apis")
+	viewEmails := flag.String("Emails", "", "view all Emails for specified domains")
+	s3domains := flag.String("S3Domains", "", "get all S3Domains for specified domains")
+	ips := flag.String("ips", "", "get all IPs for specified domains")
+	domainUrl := flag.String("DomainUrls", "", "get Domain URLs for specified domains")
+	apiPath := flag.String("api", "", "get the APIs for specified domains")
 	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
-
+	flag.Parse()
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  %s [flags]\n\n", os.Args[0])
@@ -91,8 +93,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -compare string         Compare two JS responses by JSMON_IDs (format: ID1,ID2)\n")
 	}
 
-	flag.Parse()
-
 	// Handle API key
 	if *apiKeyFlag != "" {
 		setAPIKey(*apiKeyFlag)
@@ -125,34 +125,33 @@ func main() {
 	case *uploadUrl != "":
 		uploadUrlEndpoint(*uploadUrl, headers)
 	case *viewEmails != "":
-		// Extract emails for provided domains
 		domains := strings.Split(*viewEmails, ",")
 		for i, domain := range domains {
-			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+			domains[i] = strings.TrimSpace(domain)
 		}
 		getEmails(domains)
 	case *s3domains != "":
 		domains := strings.Split(*s3domains, ",")
 		for i, domain := range domains {
-			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+			domains[i] = strings.TrimSpace(domain)
 		}
 		getS3Domains(domains)
-	case *ip != "":
-		domains := strings.Split(*ip, ",")
+	case *ips != "":
+		domains := strings.Split(*ips, ",")
 		for i, domain := range domains {
-			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+			domains[i] = strings.TrimSpace(domain)
 		}
 		getAllIps(domains)
 	case *domainUrl != "":
 		domains := strings.Split(*domainUrl, ",")
 		for i, domain := range domains {
-			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+			domains[i] = strings.TrimSpace(domain)
 		}
 		getDomainUrls(domains)
-	case *apiPath != "": // Split the comma-separated string into a slice
+	case *apiPath != "":
 		domains := strings.Split(*apiPath, ",")
 		for i, domain := range domains {
-			domains[i] = strings.TrimSpace(domain) // Trim any extra spaces
+			domains[i] = strings.TrimSpace(domain)
 		}
 		getApiPaths(domains)
 	case *getScannerResultsFlag:
@@ -175,7 +174,7 @@ func main() {
 	case *cron == "update":
 		UpdateCron(*cronNotification, *cronType, *cronDomains, *cronDomainsNotify, *cronTime)
 	case *getAllResults != "":
-		getAllAutomationResults(*getAllResults)
+		getAllAutomationResults(*getAllResults, *size)
 	case *scanDomainFlag != "":
 		words := []string{}
 		if *wordsFlag != "" {
