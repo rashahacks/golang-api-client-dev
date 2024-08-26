@@ -192,7 +192,7 @@ func getDomains() {
 		fmt.Println("Error reading response:", err)
 		return
 	}
-
+	// Unmarshal directly into a slice of strings
 	var domains []string
 	err = json.Unmarshal(body, &domains)
 	if err != nil {
