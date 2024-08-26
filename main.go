@@ -50,9 +50,45 @@ func main() {
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  %s [options]\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Options:\n")
-		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "  %s [flags]\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Flags:\n")
+
+		fmt.Fprintf(os.Stderr, "INPUT:\n")
+		fmt.Fprintf(os.Stderr, "  -scanUrl string         URL or scan ID to rescan\n")
+		fmt.Fprintf(os.Stderr, "  -uploadUrl string       URL to upload for scanning\n")
+		fmt.Fprintf(os.Stderr, "  -scanFile string        File ID to scan\n")
+		fmt.Fprintf(os.Stderr, "  -uploadFile string      File to upload (local path)\n")
+		fmt.Fprintf(os.Stderr, "  -scanDomain string      Domain to automate scan\n")
+
+		fmt.Fprintf(os.Stderr, "\nAUTHENTICATION:\n")
+		fmt.Fprintf(os.Stderr, "  -apikey string          API key for authentication\n")
+
+		fmt.Fprintf(os.Stderr, "\nOUTPUT:\n")
+		fmt.Fprintf(os.Stderr, "  -automationData string  Get all automation results\n")
+		fmt.Fprintf(os.Stderr, "  -scannerData            Get scanner results\n")
+		fmt.Fprintf(os.Stderr, "  -urls                   View all URLs\n")
+		fmt.Fprintf(os.Stderr, "  -size int               Number of URLs to fetch (default 10)\n")
+		fmt.Fprintf(os.Stderr, "  -files                  View all files\n")
+		fmt.Fprintf(os.Stderr, "  -usage                  View user profile\n")
+
+		fmt.Fprintf(os.Stderr, "\nCRON JOB:\n")
+		fmt.Fprintf(os.Stderr, "  -cron string            Set, update, or stop cronjob\n")
+		fmt.Fprintf(os.Stderr, "  -notifications string   Set cronjob notification channel\n")
+		fmt.Fprintf(os.Stderr, "  -time int               Set cronjob time\n")
+		fmt.Fprintf(os.Stderr, "  -vulnerabilitiesType    Set type of cronjob (URLs, Analysis, Scanner)\n")
+		fmt.Fprintf(os.Stderr, "  -domains string         Set domains for cronjob\n")
+		fmt.Fprintf(os.Stderr, "  -domainsNotify string   Set notify (true/false) for each domain\n")
+
+		fmt.Fprintf(os.Stderr, "\nADDITIONAL OPTIONS:\n")
+		fmt.Fprintf(os.Stderr, "  -H string               Custom headers (Key: Value, can be used multiple times)\n")
+		fmt.Fprintf(os.Stderr, "  -words string           Comma-separated list of words to include in the scan\n")
+		fmt.Fprintf(os.Stderr, "  -getDomains             Get all domains for the user\n")
+		fmt.Fprintf(os.Stderr, "  -Emails string          View all Emails for specified domains\n")
+		fmt.Fprintf(os.Stderr, "  -S3Domains string       Get all S3 Domains for specified domains\n")
+		fmt.Fprintf(os.Stderr, "  -ips string             Get all IPs for specified domains\n")
+		fmt.Fprintf(os.Stderr, "  -DomainUrls string      Get Domain URLs for specified domains\n")
+		fmt.Fprintf(os.Stderr, "  -api string             Get the APIs for specified domains\n")
+		fmt.Fprintf(os.Stderr, "  -compare string         Compare two JS responses by JSMON_IDs (format: ID1,ID2)\n")
 	}
 
 	flag.Parse()

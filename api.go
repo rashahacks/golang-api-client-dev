@@ -117,6 +117,9 @@ func uploadUrlEndpoint(url string, customHeaders []string) {
 		timestamp := time.Unix(int64(createdAt), 0)
 		fmt.Printf("Created At: %s\n", timestamp.Format(time.RFC3339))
 	}
+	if url, ok := result["url"].(string); ok {
+		fmt.Printf("url: %s\n", url)
+	}
 	if message, ok := result["message"].(string); ok {
 		fmt.Printf("Message: %s\n", message)
 	}
