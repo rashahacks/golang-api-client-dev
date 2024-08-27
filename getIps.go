@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// Function to get API paths based on domains
+// Function to get IP addresses based on domains
 func getAllIps(domains []string) {
 	// Prepare request data
 	endpoint := fmt.Sprintf("%s/getIps", apiBaseURL)
@@ -46,9 +46,6 @@ func getAllIps(domains []string) {
 		return
 	}
 
-	// fmt.Println("Raw Response Body:")
-	// fmt.Println(string(body))
-
 	// Parse response
 	var response map[string]interface{}
 	err = json.Unmarshal(body, &response)
@@ -59,7 +56,7 @@ func getAllIps(domains []string) {
 
 	// Access ipAddresses map
 	if ipData, ok := response["ipAddresses"].(map[string]interface{}); ok {
-		// Extract IPv4 addresses
+		// Extract and print IPv4 addresses
 		if ipv4, ok := ipData["ipv4Addresses"].([]interface{}); ok {
 			fmt.Println("IPv4 Addresses:")
 			for _, ip := range ipv4 {
@@ -70,10 +67,10 @@ func getAllIps(domains []string) {
 				}
 			}
 		} else {
-			fmt.Println("Error: 'ipv4Addresses' field not found or not in expected format")
+			fmt.Println("No 'ipv4Addresses' found or not in expected format")
 		}
 
-		// Extract IPv6 addresses
+		// Extract and print IPv6 addresses
 		if ipv6, ok := ipData["ipv6Addresses"].([]interface{}); ok {
 			fmt.Println("IPv6 Addresses:")
 			for _, ip := range ipv6 {
@@ -90,5 +87,3 @@ func getAllIps(domains []string) {
 		fmt.Println("Error: 'ipAddresses' field not found or not in expected format")
 	}
 }
-
-

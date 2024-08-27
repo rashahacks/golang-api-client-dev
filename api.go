@@ -9,9 +9,12 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type DiffItem struct {
@@ -21,7 +24,8 @@ type DiffItem struct {
 }
 
 type AutomateScanDomainRequest struct {
-	Domain string `json:"domain"`
+	Domain string   `json:"domain"`
+	Words  []string `json:"words"`
 }
 
 type AnalysisResult struct {
@@ -50,11 +54,22 @@ type AutomateScanDomainResponse struct {
 	ScanResponse  ScanResponse `json:"scanResponse"`
 }
 
-func uploadUrlEndpoint(url string) {
+func uploadUrlEndpoint(url string, customHeaders []string) {
 	endpoint := fmt.Sprintf("%s/uploadUrl", apiBaseURL)
 
-	requestBody, err := json.Marshal(map[string]string{
-		"url": url,
+	headerObjects := make([]map[string]string, 0)
+	for _, header := range customHeaders {
+		parts := strings.SplitN(header, ":", 2)
+		if len(parts) == 2 {
+			headerObjects = append(headerObjects, map[string]string{
+				strings.TrimSpace(parts[0]): strings.TrimSpace(parts[1]),
+			})
+		}
+	}
+
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"url":     url,
+		"headers": headerObjects,
 	})
 	if err != nil {
 		fmt.Println("Error creating request body:", err)
@@ -84,22 +99,31 @@ func uploadUrlEndpoint(url string) {
 		return
 	}
 
-	var result interface{}
+	var result map[string]interface{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		fmt.Println("Error parsing JSON:", err)
 		return
 	}
-
-	prettyJSON, err := json.MarshalIndent(result, "", "  ")
-	if err != nil {
-		fmt.Println("Error formatting JSON:", err)
-		return
+	fmt.Println("URL Upload Result:")
+	fmt.Println("------------------")
+	if jsmonId, ok := result["jsmonId"].(string); ok {
+		fmt.Printf("JSMON ID: %s\n", jsmonId)
 	}
-
-	fmt.Println(string(prettyJSON))
+	if hash, ok := result["hash"].(string); ok {
+		fmt.Printf("Hash: %s\n", hash)
+	}
+	if createdAt, ok := result["createdAt"].(float64); ok {
+		timestamp := time.Unix(int64(createdAt), 0)
+		fmt.Printf("Created At: %s\n", timestamp.Format(time.RFC3339))
+	}
+	if url, ok := result["url"].(string); ok {
+		fmt.Printf("url: %s\n", url)
+	}
+	if message, ok := result["message"].(string); ok {
+		fmt.Printf("Message: %s\n", message)
+	}
 }
-
 func rescanUrlEndpoint(scanId string) {
 	endpoint := fmt.Sprintf("%s/rescanURL/%s", apiBaseURL, scanId)
 
@@ -135,6 +159,49 @@ func rescanUrlEndpoint(scanId string) {
 
 	// Pretty print JSON
 	prettyJSON, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		fmt.Println("Error formatting JSON:", err)
+		return
+	}
+
+	fmt.Println(string(prettyJSON))
+}
+
+func getDomains() {
+	endpoint := fmt.Sprintf("%s/getDomains", apiBaseURL)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+	// Unmarshal directly into a slice of strings
+	var domains []string
+	err = json.Unmarshal(body, &domains)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return
+	}
+
+	// Pretty print JSON
+	prettyJSON, err := json.MarshalIndent(domains, "", "  ")
 	if err != nil {
 		fmt.Println("Error formatting JSON:", err)
 		return
@@ -185,8 +252,35 @@ func scanFileEndpoint(fileId string) {
 	fmt.Println(string(prettyJSON))
 }
 
-func uploadFileEndpoint(filePath string) {
+func uploadFileEndpoint(filePath string, headers []string) {
 	endpoint := fmt.Sprintf("%s/uploadFile", apiBaseURL)
+
+	headerMaps := []map[string]string{}
+
+	// Parse headers into the correct format
+	for _, header := range headers {
+		parts := strings.SplitN(header, ":", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			headerMaps = append(headerMaps, map[string]string{key: value})
+		}
+	}
+
+	headersJSON, err := json.Marshal(headerMaps)
+	if err != nil {
+		log.Fatalf("Error marshaling headers to JSON: %v", err)
+	}
+
+	// Create query parameters
+	queryParams := url.Values{}
+	queryParams.Add("headers", string(headersJSON))
+
+	// Append query parameters to the endpoint URL
+	endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
+
+	// Log the final endpoint URL for debugging
+	log.Printf("Final endpoint URL: %s", endpoint)
 
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -194,12 +288,23 @@ func uploadFileEndpoint(filePath string) {
 	}
 	defer file.Close()
 
+	fileInfo, err := file.Stat()
+	if err != nil {
+		log.Fatalf("Error getting file info: %v", err)
+	}
+	if fileInfo.Size() > 10*1024*1024 {
+		log.Fatalf("File size exceeds limit")
+	}
+
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", filepath.Base(filePath)))
+	h.Set("Content-Type", "text/plain")
+	part, err := writer.CreatePart(h)
 	if err != nil {
-		log.Fatalf("Error creating form file: %v", err)
+		log.Fatalf("Error creating form part: %v", err)
 	}
 
 	_, err = io.Copy(part, file)
@@ -219,14 +324,11 @@ func uploadFileEndpoint(filePath string) {
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
 
-	log.Printf("Sending request to: %s", endpoint)
-	log.Printf("Request headers:")
-	for k, v := range req.Header {
-		log.Printf("%s: %s", k, v)
-	}
-
+	log.Printf("File being uploaded: %s", filepath.Base(filePath))
 	log.Printf("Request body length: %d bytes", body.Len())
+	log.Printf("Request body content (first 200 bytes): %s", body.String()[:min(200, body.Len())])
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -240,18 +342,44 @@ func uploadFileEndpoint(filePath string) {
 		log.Fatalf("Error reading response: %v", err)
 	}
 
-	log.Printf("Response status: %s", resp.Status)
-	log.Printf("Response body: %s", string(responseBody))
-
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		log.Fatalf("Upload failed with status code: %d", resp.StatusCode)
+	}
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(responseBody, &result); err != nil {
+		log.Fatalf("Failed to parse JSON response: %v", err)
+	}
+
+	// Print the response in a more user-friendly format
+	fmt.Println("File Upload Result:")
+	fmt.Println("-------------------")
+	if jsmonId, ok := result["jsmonId"].(string); ok {
+		fmt.Printf("JSMON ID: %s\n", jsmonId)
+	}
+	if hash, ok := result["hash"].(string); ok {
+		fmt.Printf("Hash: %s\n", hash)
+	}
+	if createdAt, ok := result["createdAt"].(float64); ok {
+		timestamp := time.Unix(int64(createdAt), 0)
+		fmt.Printf("Created At: %s\n", timestamp.Format(time.RFC3339))
+	}
+	if message, ok := result["message"].(string); ok {
+		fmt.Printf("Message: %s\n", message)
 	}
 }
 
-func getAllAutomationResults(input, inputType string, showOnly string) {
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func getAllAutomationResults(input string, size int) {
 	endpoint := fmt.Sprintf("%s/getAllAutomationResults", apiBaseURL)
 
-	url := fmt.Sprintf("%s?showonly=%s&inputType=%s&input=%s", endpoint, showOnly, inputType, input)
+	url := fmt.Sprintf("%s?showonly=all&inputType=domain&input=%s&size=%d", endpoint, input, size)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -290,7 +418,6 @@ func getAllAutomationResults(input, inputType string, showOnly string) {
 
 	fmt.Println(string(prettyJSON))
 }
-
 func getScannerResults() {
 	endpoint := fmt.Sprintf("%s/getScannerResults", apiBaseURL)
 
@@ -338,11 +465,14 @@ func getScannerResults() {
 	}
 }
 
-func automateScanDomain(domain string) {
-	fmt.Println("automateScanDomain function called")
+func automateScanDomain(domain string, words []string) {
+	fmt.Printf("automateScanDomain called with domain: %s and words: %v\n", domain, words)
 	endpoint := fmt.Sprintf("%s/automateScanDomain", apiBaseURL)
 
-	requestBody := AutomateScanDomainRequest{Domain: domain}
+	requestBody := AutomateScanDomainRequest{
+		Domain: domain,
+		Words:  words,
+	}
 	body, err := json.Marshal(requestBody)
 	if err != nil {
 		fmt.Printf("failed to marshal request body: %v\n", err)
@@ -366,48 +496,81 @@ func automateScanDomain(domain string) {
 	}
 	defer resp.Body.Close()
 
-	responseBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("failed to read response body: %v\n", err)
-		return
-	}
+	decoder := json.NewDecoder(resp.Body)
+	for {
+		var response map[string]interface{}
+		err := decoder.Decode(&response)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			fmt.Printf("failed to unmarshal JSON response: %v\n", err)
+			return
+		}
 
-	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("non-200 response: %s\n", responseBody)
-		return
-	}
-
-	var response AutomateScanDomainResponse
-	err = json.Unmarshal(responseBody, &response)
-	if err != nil {
-		fmt.Printf("failed to unmarshal JSON response: %v\n", err)
-		return
-	}
-
-	printFormattedResponse(response)
-}
-
-func printFormattedResponse(response AutomateScanDomainResponse) {
-	fmt.Println("Message:", response.Message)
-	fmt.Println("File ID:", response.FileId)
-	fmt.Println("Trimmed Domain:", response.TrimmedDomain)
-
-	fmt.Println("\nScan Response:")
-	fmt.Println("  Message:", response.ScanResponse.Message)
-
-	fmt.Println("\n  Analysis Result:")
-	fmt.Println("    Message:", response.ScanResponse.AnalysisResult.Message)
-	fmt.Println("    Total Chunks:", response.ScanResponse.AnalysisResult.TotalChunks)
-
-	fmt.Println("\n  Module Scan Result:")
-	fmt.Println("    Message:", response.ScanResponse.ModuleScanResult.Message)
-	for _, module := range response.ScanResponse.ModuleScanResult.Data {
-		fmt.Println("    Module Name:", module.ModuleName)
-		fmt.Println("    URL:", module.URL)
-		fmt.Println()
+		printFormattedResponse(response)
 	}
 }
 
+// func printFormattedResponse(response map[string]interface{}) {
+// 	fmt.Println("Message:", response["message"])
+// 	fmt.Println("File ID:", response["fileId"])
+// 	fmt.Println("Trimmed Domain:", response["trimmedDomain"])
+
+// 	scanResponse, ok := response["scanResponse"].(map[string]interface{})
+// 	if ok {
+// 		fmt.Println("\nScan Response:")
+// 		fmt.Println("  Message:", scanResponse["message"])
+
+// 		analysisResult, ok := scanResponse["analysis_result"].(map[string]interface{})
+// 		if ok {
+// 			fmt.Println("\n  Analysis Result:")
+// 			fmt.Println("    Message:", analysisResult["message"])
+// 			fmt.Println("    Total Chunks:", analysisResult["totalChunks"])
+// 		}
+
+//			moduleScanResult, ok := scanResponse["modulescan_result"].(map[string]interface{})
+//			if ok {
+//				fmt.Println("\n  Module Scan Result:")
+//				fmt.Println("    Message:", moduleScanResult["message"])
+//				modules, ok := moduleScanResult["data"].([]interface{})
+//				if ok {
+//					for _, module := range modules {
+//						m := module.(map[string]interface{})
+//						fmt.Println("    Module Name:", m["moduleName"])
+//						fmt.Println("    URL:", m["url"])
+//						fmt.Println()
+//					}
+//				}
+//			}
+//		}
+//	}
+func printFormattedResponse(response map[string]interface{}) {
+	fmt.Println("Message:", response["message"])
+	fmt.Println("File ID:", response["fileId"])
+	fmt.Println("Trimmed Domain:", response["trimmedDomain"])
+
+	scanResponse, ok := response["scanResponse"].(map[string]interface{})
+	if ok {
+		fmt.Println("\nResult")
+		fmt.Println("", scanResponse["message"])
+
+		analysisResult, ok := scanResponse["analysis_result"].(map[string]interface{})
+		if ok {
+			fmt.Println("\n  Analysis Result:")
+			fmt.Println("    ", analysisResult["message"])
+			fmt.Println("    Total Chunks:", analysisResult["totalChunks"])
+			fmt.Println("    Use -automationData flag to view all automation data for this domain")
+		}
+
+		moduleScanResult, ok := scanResponse["modulescan_result"].(map[string]interface{})
+		if ok {
+			fmt.Println("\n  Module Scan Result:")
+			fmt.Println("    ", moduleScanResult["message"])
+			fmt.Println("    Use -scannerData flag to view module scanner data for this domain")
+		}
+	}
+}
 func callViewProfile() {
 	endpoint := fmt.Sprintf("%s/viewProfile", apiBaseURL)
 

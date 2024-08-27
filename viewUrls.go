@@ -12,13 +12,13 @@ type URLResponse struct {
 	Urls    []URLItem `json:"urls"`
 	Message string    `json:"Message"`
 }
+
 type URLItem struct {
 	URL string `json:"url"`
 }
 
-func viewUrls() {
-	//fmt.Println("viewUrls function called") // Debug statement
-	endpoint := fmt.Sprintf("%s/searchAllUrls", apiBaseURL)
+func viewUrls(size int) {
+	endpoint := fmt.Sprintf("%s/searchAllUrls?size=%d&start=0", apiBaseURL, size) // Use the size parameter
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -47,8 +47,6 @@ func viewUrls() {
 		return
 	}
 
-	//fmt.Println("Message:", response.Message)
-	//fmt.Println("URLs:")
 	for _, urlItem := range response.Urls {
 		fmt.Println(urlItem.URL)
 	}
