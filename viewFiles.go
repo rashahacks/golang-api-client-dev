@@ -53,8 +53,7 @@ func viewFiles() {
 		return
 	}
 
-	fmt.Println("Message:", response.Message)
-	fmt.Println("Files:")
+	fmt.Println(response.Message)
 	for _, fileItem := range response.Data {
 		fmt.Printf("File Name: %s\nFile Size: %.3f MB\nFile ID: %s\nFile Key: %s\nNumber of URLs: %d\nCreated At: %s\n\n",
 			fileItem.FileName, fileItem.FileSize, fileItem.FileID, fileItem.FileKey, fileItem.Urls, fileItem.CreatedAt)
