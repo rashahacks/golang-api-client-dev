@@ -72,6 +72,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -urlSize int               Number of URLs to fetch (default 10)\n")
 		fmt.Fprintf(os.Stderr, "  -getFiles                  View all files\n")
 		fmt.Fprintf(os.Stderr, "  -usage                  View user profile\n")
+		fmt.Fprintf(os.Stderr, "  -urlswithmultipleresponse  View user profile\n")
 
 		fmt.Fprintf(os.Stderr, "\nCRON JOB:\n")
 		fmt.Fprintf(os.Stderr, "  -cron string            Set, update, or stop cronjob\n")
