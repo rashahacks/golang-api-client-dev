@@ -63,7 +63,5 @@ func getApiPaths(domains []string) {
 				fmt.Println("Error: Invalid type in 'apiPaths'")
 			}
 		}
-	} else {
-		fmt.Println("Error: 'apiPaths' field not found or not in expected format")
 	}
 }
