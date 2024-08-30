@@ -46,6 +46,7 @@ func main() {
 	viewEmails := flag.String("getEmails", "", "view all Emails for specified domains")
 	s3domains := flag.String("getS3Domains", "", "get all S3Domains for specified domains")
 	ips := flag.String("getIps", "", "get all IPs for specified domains")
+	gql := flag.String("getGqlOps", "", "get graph QL operations")
 	domainUrl := flag.String("getDomainUrls", "", "get Domain URLs for specified domains")
 	apiPath := flag.String("getApiPaths", "", "get the APIs for specified domains")
 	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
@@ -145,6 +146,12 @@ func main() {
 			domains[i] = strings.TrimSpace(domain)
 		}
 		getAllIps(domains)
+	case *gql != "":
+		domains := strings.Split(*gql, ",")
+		for i, domain := range domains {
+			domains[i] = strings.TrimSpace(domain)
+		}
+		getGqlOps(domains)
 	case *domainUrl != "":
 		domains := strings.Split(*domainUrl, ",")
 		for i, domain := range domains {
