@@ -25,6 +25,7 @@ func main() {
 	uploadFile := flag.String("uploadFile", "", "File to upload giving path to the file locally.")
 	getAllResults := flag.String("getAutomationData", "", "Get all automation results")
 	size := flag.Int("size", 10000, "Number of results to fetch (default 10000)")
+	fileTypes := flag.String("fileTypes", "", "files type (e.g. pdf,txt)")
 	getScannerResultsFlag := flag.Bool("getScannerData", false, "Get scanner results")
 	cron := flag.String("cron", "", "Set cronjob.")
 	cronNotification := flag.String("notifications", "", "Set cronjob notification channel.")
@@ -49,8 +50,16 @@ func main() {
 	gql := flag.String("getGqlOps", "", "get graph QL operations")
 	domainUrl := flag.String("getDomainUrls", "", "get Domain URLs for specified domains")
 	apiPath := flag.String("getApiPaths", "", "get the APIs for specified domains")
+	fileExtensionUrls := flag.String("getFileExtensionUrls", "", "get the urls containing any type of file")
+	socialMediaUrls := flag.String("getSocialMediaUrls", "", "get the urls for the social media sites")
+	domainStatus := flag.String("getDomainStatus", "" , "get the availabilty of domains")
+	queryParamsUrls := flag.String("getQueryParamsUrls", "", "get the urls containing query params for the specified domain")
+	localhostUrls := flag.String("getLocalhostUrls", "", "get the urls which has localhost in the hostname for the specified domain")
+	filteredPortUrls := flag.String("getUrlsWithPort", "", "get the urls containing a port number in the hostname for the specified domain")
+	s3DomainsInvalid := flag.String("getS3DomainsInvalid", "", "get the S3 domains which are available (404 status code) for the specified domain")
 	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
 	flag.Parse()
+
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  %s [flags]\n\n", os.Args[0])
@@ -91,7 +100,15 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -getS3Domains string       Get all S3 Domains for specified domains\n")
 		fmt.Fprintf(os.Stderr, "  -getIps string             Get all IPs for specified domains\n")
 		fmt.Fprintf(os.Stderr, "  -getDomainUrls string      Get Domain URLs for specified domains\n")
-		fmt.Fprintf(os.Stderr, "  -getApiPaths string             Get the APIs for specified domains\n")
+		fmt.Fprintf(os.Stderr, "  -getApiPaths string             	Get the APIs for specified domains\n")
+		fmt.Fprintf(os.Stderr, "  -getFileExtensionUrls string     	Get the urls containing any type of file\n")
+		fmt.Fprintf(os.Stderr, "  -getSocialMediaUrls string       	Get the urls for the social media sites\n")
+		fmt.Fprintf(os.Stderr, "  -getDomainStatus       			Get the availabilty of domains\n")
+		fmt.Fprintf(os.Stderr, "  -getQueryParamsUrls       		Get the urls containing query params\n")
+		fmt.Fprintf(os.Stderr, "  -getLocalhostUrls       			Get the urls containing localhost in their urls (includes local ip address)\n")
+		fmt.Fprintf(os.Stderr, "  -getUrlsWithPorts       			Get the urls containing port number in their hostname\n")
+		fmt.Fprintf(os.Stderr, "  -getS3DomainsInvalid       		Get the s3 bucket urls which are available (having 404 status code)\n")
+
 		fmt.Fprintf(os.Stderr, "  -compare string         Compare two JS responses by JSMON_IDs (format: ID1,ID2)\n")
 	}
 
@@ -174,6 +191,30 @@ func main() {
 		StopCron()
 	case *getDomainsFlag:
 		getDomains()
+
+	case *fileExtensionUrls != "":
+		extensions := strings.Split(*fileTypes, ",")
+		for i, extension := range extensions {
+			extensions[i] = strings.TrimSpace(extension)
+		}
+		getAllFileExtensionUrls(*fileExtensionUrls, extensions, *size)
+	case *domainStatus != "":
+		// domains := strings.Split(*domainStatus, ",")
+		// for i, domain := range domains {
+			// 	domains[i] = strings.TrimSpace(domain)
+			// }
+			getAllDomainsStatus(*domainStatus, *size)
+			
+	case *socialMediaUrls != "":
+		getAllSocialMediaUrls(*socialMediaUrls, *size)
+	case *queryParamsUrls != "":
+		getAllQueryParamsUrls(*queryParamsUrls, *size)
+	case *localhostUrls != "":
+		getAllLocalhostUrls(*localhostUrls, *size)
+	case *filteredPortUrls != "":
+		getAllFilteredPortUrls(*filteredPortUrls, *size)
+	case *s3DomainsInvalid != "":
+		getAllS3DomainsInvalid(*s3DomainsInvalid, *size)
 	case *compareFlag != "":
 		ids := strings.Split(*compareFlag, ",")
 		if len(ids) != 2 {
