@@ -62,12 +62,10 @@ func main() {
 	rescanDomainFlag := flag.String("rescanDomain", "", "Rescan all URLs for a specific domain")
 	totalAnalysisDataFlag := flag.Bool("totalAnalysisData", false, "total count of overall analysis data")
 
-	flag.Parse()
-
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  %s [flags]\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Flags:\n")
+		fmt.Printf("Usage of %s:\n", os.Args[0])
+		fmt.Printf("  %s [flags]\n\n", os.Args[0])
+		fmt.Println("Flags:")
 
 		fmt.Fprintf(os.Stderr, "INPUT:\n")
 		fmt.Fprintf(os.Stderr, "  -scanUrl string         URL or scan ID to rescan\n")
@@ -117,6 +115,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -compare string         Compare two JS responses by JSMON_IDs (format: ID1,ID2)\n")
 		fmt.Fprintf(os.Stderr, "  -totalAnalysisData         gives the total count of overall analysis data\n")
 	}
+	flag.Parse()
 
 	// Handle API key
 	if *apiKeyFlag != "" {
