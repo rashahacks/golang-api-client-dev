@@ -60,6 +60,7 @@ func main() {
 	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
 	searchUrlsByDomainFlag := flag.String("searchUrlsByDomain", "", "Search URLs by domain")
 	getResultByJsmonId := flag.String("getResultByJsmonId", "", "ID of the jsmon to retrieve automation results for")
+	getResultByFileId := flag.String("getResultByFileId", "", "ID of the File to retrieve automation results for")
 	rescanDomainFlag := flag.String("rescanDomain", "", "Rescan all URLs for a specific domain")
 	totalAnalysisDataFlag := flag.Bool("totalAnalysisData", false, "total count of overall analysis data")
 
@@ -116,6 +117,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -compare <jsmonId1, jsmonId2>         Compare two JS responses by JSMON_IDs (format: ID1,ID2)\n")
 		fmt.Fprintf(os.Stderr, "  -totalAnalysisData         gives the total count of overall analysis data\n")
 		fmt.Fprintf(os.Stderr, "  -getResultByJsmonId         gives the automation result by jsmon id\n")
+		fmt.Fprintf(os.Stderr, "  -getResultByFileId          gives automation result by file id\n")
 	}
 	flag.Parse()
 
@@ -167,6 +169,9 @@ func main() {
 	case *getResultByJsmonId != "":
 		// Call getAutomationResults with the provided jsmonId
 		getAutomationResultsByJsmonId(strings.TrimSpace(*getResultByJsmonId))
+	case *getResultByFileId != "":
+		// Call getAutomationResults with the provided jsmonId
+		getAutomationResultsByFileId(strings.TrimSpace(*getResultByFileId))
 	case *s3domains != "":
 		domains := strings.Split(*s3domains, ",")
 		for i, domain := range domains {
