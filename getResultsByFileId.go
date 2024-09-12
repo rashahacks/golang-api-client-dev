@@ -11,7 +11,6 @@ import (
 func getAutomationResultsByFileId(fileId string) {
 	// Define the API base URL and endpoint, appending the jsmonId as a query parameter
 	endpoint := fmt.Sprintf("%s/getAllAutomationResults?inputType=fileid&input=%s&showonly=all", apiBaseURL, fileId)
-	fmt.Printf(fileId)
 
 	// Create a new HTTP request with the GET method
 	req, err := http.NewRequest("GET", endpoint, nil) // No need for request body in GET
