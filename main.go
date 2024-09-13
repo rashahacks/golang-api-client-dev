@@ -58,6 +58,9 @@ func main() {
 	filteredPortUrls := flag.String("getUrlsWithPorts", "", "get the urls containing a port number in the hostname for the specified domain")
 	s3DomainsInvalid := flag.String("getS3DomainsInvalid", "", "get the S3 domains which are available (404 status code) for the specified domain")
 	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
+	reverseSearchResults := flag.String("reverseSearchResults", "", "Specify the input type (e.g., emails, domainname)")
+	//getResultByValue := flag.String("value", "", "Specify the input value")
+
 	searchUrlsByDomainFlag := flag.String("searchUrlsByDomain", "", "Search URLs by domain")
 	getResultByJsmonId := flag.String("getResultByJsmonId", "", "ID of the jsmon to retrieve automation results for")
 	getResultByFileId := flag.String("getResultByFileId", "", "ID of the File to retrieve automation results for")
@@ -118,6 +121,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -compare <jsmonId1, jsmonId2>         Compare two JS responses by JSMON_IDs (format: ID1,ID2)\n")
 
 		fmt.Fprintf(os.Stderr, "  -totalAnalysisData         gives the total count of overall analysis data\n")
+		fmt.Fprintf(os.Stderr, "  -getResultByValue           gives the result for particular\n")
 		fmt.Fprintf(os.Stderr, "  -getResultByJsmonId         gives the automation result by jsmon id\n")
 		fmt.Fprintf(os.Stderr, "  -getResultByFileId          gives automation result by file  id\n")
 	}
@@ -171,6 +175,21 @@ func main() {
 	case *getResultByJsmonId != "":
 		// Call getAutomationResults with the provided jsmonId
 		getAutomationResultsByJsmonId(strings.TrimSpace(*getResultByJsmonId))
+	case *reverseSearchResults != "":
+        // Split the reverseSearchResults into field and value
+        parts := strings.SplitN(*reverseSearchResults, "=", 2)
+        if len(parts) != 2 {
+            fmt.Println("Invalid format for reverseSearchResults. Use field=value format.")
+            return
+        }
+
+        // Trim spaces and assign to variables
+        field := strings.TrimSpace(parts[0])
+        value := strings.TrimSpace(parts[1])
+
+        // Call the function with the field and value
+        getAutomationResultsByInput(field, value)
+
 	case *getResultByFileId != "":
 		// Call getAutomationResults with the provided jsmonId
 		getAutomationResultsByFileId(strings.TrimSpace(*getResultByFileId))
