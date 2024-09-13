@@ -108,7 +108,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -getS3Domains <domain>        	Get all S3 Domains for specified domains\n")
 		fmt.Fprintf(os.Stderr, "  -getIps <domain>              	Get all IPs for specified domains\n")
 		fmt.Fprintf(os.Stderr, "  -getDomainUrls <domain>       	Get Domain URLs for specified domains\n")
-		fmt.Fprintf(os.Stderr, "  -getApiPaths string             	Get the APIs for specified domains\n")
+		fmt.Fprintf(os.Stderr, "  -getApiPaths <domain>             	Get the APIs for specified domains\n")
 		fmt.Fprintf(os.Stderr, "  -getFileExtensionUrls <domain>     	Get the urls containing any type of file(-fileTypes) for the specified domain\n")
 		fmt.Fprintf(os.Stderr, "  -getSocialMediaUrls <domain>       	Get the urls for the social media sites for the specified domain\n")
 		fmt.Fprintf(os.Stderr, "  -getDomainStatus <domain>       	Get the availabilty of domains for the specified domain\n")
@@ -119,13 +119,13 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -rescanDomain <domain>     		Rescan all URLs for a specific domain\n")
 		fmt.Fprintf(os.Stderr, "  -searchUrlsByDomain       		Search URLs by domain\n")
 		fmt.Fprintf(os.Stderr, "  -compare <jsmonId1, jsmonId2>         Compare two JS responses by JSMON_IDs (format: ID1,ID2)\n")
-
-		fmt.Fprintf(os.Stderr, "  -totalAnalysisData         gives the total count of overall analysis data\n")
-		fmt.Fprintf(os.Stderr, "  -getResultByJsmonId         gives the automation result by jsmon id\n")
-		fmt.Fprintf(os.Stderr, "  -getResultByFileId          gives automation result by file  id\n")
+		fmt.Fprintf(os.Stderr, "  -getGqlOps <domain>                   Get graph QL operations\n")
+		fmt.Fprintf(os.Stderr, "  -totalAnalysisData          		Gives the total count of overall analysis data\n")
+		fmt.Fprintf(os.Stderr, "  -getResultByJsmonId         		Gives the automation result by jsmon id\n")
+		fmt.Fprintf(os.Stderr, "  -getResultByFileId          		Gives automation result by file  id\n")
 
 		fmt.Fprintf(os.Stderr, "\nAUTOMATION RESULTS BY FIELD:  -reverseSearchResults <field>=<value>\n")
-		fmt.Fprintf(os.Stderr, "  -emails, domainname, extracteddomains, s3domains, url, extractedurls, ipv4addresses, ipv6addresses, jwttokens, gqlquery, gqlmutation, guids, apipaths, vulnerabilities, nodemodules, domainstatus, queryparamsurls, socialmediaurls, filterdporturls, gqlfragment, s3domainsinvalid, fileextensionurls, localhosturls\n  Gives the result on the basis of email provided\n")
+		fmt.Fprintf(os.Stderr, "  -emails, domainname, extracteddomains, s3domains, url, extractedurls, ipv4addresses, ipv6addresses, jwttokens, gqlquery, gqlmutation, guids, apipaths, vulnerabilities, nodemodules, domainstatus, queryparamsurls, socialmediaurls, filterdporturls, gqlfragment, s3domainsinvalid, fileextensionurls, localhosturls\n  Gives the result on the basis of field provided\n")
 		
 	}
 	flag.Parse()
