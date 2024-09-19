@@ -234,8 +234,10 @@ func searchUrlsByDomain(domain string) {
 }
 
 func uploadUrlEndpoint(url string, customHeaders []string) {
+
 	endpoint := fmt.Sprintf("%s/uploadUrl", apiBaseURL)
 
+	// Call the function : function is in getResultsByJsmonID
 	headerObjects := make([]map[string]string, 0)
 	for _, header := range customHeaders {
 		parts := strings.SplitN(header, ":", 2)
@@ -284,9 +286,14 @@ func uploadUrlEndpoint(url string, customHeaders []string) {
 		fmt.Println("Error parsing JSON:", err)
 		return
 	}
+
+	fmt.Println("Call the getResultByJsmonId function")
+	getAutomationResultsByJsmonId(result["jsmonId"].(string))
+
 	fmt.Println("URL Upload Result:")
 	fmt.Println("------------------")
 	if jsmonId, ok := result["jsmonId"].(string); ok {
+		// getAutomationResultsByJsmonId()
 		fmt.Printf("JSMON ID: %s\n", jsmonId)
 	}
 	if hash, ok := result["hash"].(string); ok {
@@ -303,6 +310,8 @@ func uploadUrlEndpoint(url string, customHeaders []string) {
 		fmt.Printf("Message: %s\n", message)
 	}
 }
+
+// Function : 
 func rescanUrlEndpoint(scanId string) {
 	endpoint := fmt.Sprintf("%s/rescanURL/%s", apiBaseURL, scanId)
 
