@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"encoding/json"
 )
 
 // Function to fetch automation results for a given jsmonId
@@ -42,7 +43,20 @@ func getAutomationResultsByFileId(fileId string) {
 	// Check if the response is successful (Status Code: 2xx)
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		// Print the response with all fields related to the jsmonId
-		fmt.Println(string(body))
+		var result interface{} 
+		err = json.Unmarshal(body, &result)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return
+	}
+
+		prettyJSON, err := json.MarshalIndent(result, "", " ")
+		if err != nil {
+		fmt.Println("Error formatting JSON:", err)
+		return
+	}
+		fmt.Println(string(prettyJSON))
+		// fmt.Println(string(body))
 	} else {
 		fmt.Printf("Error: Received status code %d\n", resp.StatusCode)
 		fmt.Println("Response:", string(body)) // Print the response even if it's an error
