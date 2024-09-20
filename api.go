@@ -14,7 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
+	// "time"
 )
 
 type DiffItem struct {
@@ -287,28 +287,27 @@ func uploadUrlEndpoint(url string, customHeaders []string) {
 		return
 	}
 
-	fmt.Println("Call the getResultByJsmonId function")
-	getAutomationResultsByJsmonId(result["jsmonId"].(string))
-
 	fmt.Println("URL Upload Result:")
 	fmt.Println("------------------")
+	
+	
 	if jsmonId, ok := result["jsmonId"].(string); ok {
-		// getAutomationResultsByJsmonId()
 		fmt.Printf("JSMON ID: %s\n", jsmonId)
+		getAutomationResultsByJsmonId(result["jsmonId"].(string))
 	}
-	if hash, ok := result["hash"].(string); ok {
-		fmt.Printf("Hash: %s\n", hash)
-	}
-	if createdAt, ok := result["createdAt"].(float64); ok {
-		timestamp := time.Unix(int64(createdAt), 0)
-		fmt.Printf("Created At: %s\n", timestamp.Format(time.RFC3339))
-	}
-	if url, ok := result["url"].(string); ok {
-		fmt.Printf("url: %s\n", url)
-	}
-	if message, ok := result["message"].(string); ok {
-		fmt.Printf("Message: %s\n", message)
-	}
+	// if hash, ok := result["hash"].(string); ok {
+	// 	fmt.Printf("Hash: %s\n", hash)
+	// }
+	// if createdAt, ok := result["createdAt"].(float64); ok {
+	// 	timestamp := time.Unix(int64(createdAt), 0)
+	// 	fmt.Printf("Created At: %s\n", timestamp.Format(time.RFC3339))
+	// }
+	// if url, ok := result["url"].(string); ok {
+	// 	fmt.Printf("url: %s\n", url)
+	// }
+	// if message, ok := result["message"].(string); ok {
+	// 	fmt.Printf("Message: %s\n", message)
+	// }
 }
 
 // Function : 
@@ -420,6 +419,7 @@ func scanFileEndpoint(fileId string) {
 		return
 	}
 
+	
 	var result interface{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
@@ -506,7 +506,7 @@ func uploadFileEndpoint(filePath string, headers []string) {
 	endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
 
 	// Log the final endpoint URL for debugging
-	log.Printf("Final endpoint URL: %s", endpoint)
+	// log.Printf("Final endpoint URL: %s", endpoint)
 
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -552,9 +552,9 @@ func uploadFileEndpoint(filePath string, headers []string) {
 	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
 	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
 
-	log.Printf("File being uploaded: %s", filepath.Base(filePath))
-	log.Printf("Request body length: %d bytes", body.Len())
-	log.Printf("Request body content (first 200 bytes): %s", body.String()[:min(200, body.Len())])
+	// log.Printf("File being uploaded: %s", filepath.Base(filePath))
+	// log.Printf("Request body length: %d bytes", body.Len())
+	// log.Printf("Request body content (first 200 bytes): %s", body.String()[:min(200, body.Len())])
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -568,6 +568,7 @@ func uploadFileEndpoint(filePath string, headers []string) {
 		log.Fatalf("Error reading response: %v", err)
 	}
 
+
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		log.Fatalf("Upload failed with status code: %d", resp.StatusCode)
 	}
@@ -577,22 +578,27 @@ func uploadFileEndpoint(filePath string, headers []string) {
 		log.Fatalf("Failed to parse JSON response: %v", err)
 	}
 
+	fileID, ok := result["fileId"].(string)
+	if !ok {
+		fmt.Println("Error: fileId is not a string")
+		return
+	}
+	getAutomationResultsByFileId(fileID)
 	// Print the response in a more user-friendly format
-	fmt.Println("File Upload Result:")
-	fmt.Println("-------------------")
-	if jsmonId, ok := result["jsmonId"].(string); ok {
-		fmt.Printf("JSMON ID: %s\n", jsmonId)
-	}
-	if hash, ok := result["hash"].(string); ok {
-		fmt.Printf("Hash: %s\n", hash)
-	}
-	if createdAt, ok := result["createdAt"].(float64); ok {
-		timestamp := time.Unix(int64(createdAt), 0)
-		fmt.Printf("Created At: %s\n", timestamp.Format(time.RFC3339))
-	}
-	if message, ok := result["message"].(string); ok {
-		fmt.Printf("Message: %s\n", message)
-	}
+	// fmt.Println("File ID: \n",result["fileId"])
+	// if jsmonId, ok := result["jsmonId"].(string); ok {
+	// 	fmt.Printf("JSMON ID: %s\n", jsmonId)
+	// }
+	// if hash, ok := result["hash"].(string); ok {
+	// 	fmt.Printf("Hash: %s\n", hash)
+	// }
+	// if createdAt, ok := result["createdAt"].(float64); ok {
+	// 	timestamp := time.Unix(int64(createdAt), 0)
+	// 	fmt.Printf("Created At: %s\n", timestamp.Format(time.RFC3339))
+	// }
+	// if message, ok := result["message"].(string); ok {
+	// 	fmt.Printf("Message: %s\n", message)
+	// }
 }
 
 func min(a, b int) int {
