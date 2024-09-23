@@ -50,12 +50,31 @@ func getAutomationResultsByJsmonId(jsmonId string) {
 		return
 	}
 
-		prettyJSON, err := json.MarshalIndent(result, "", " ")
-		if err != nil {
-		fmt.Println("Error formatting JSON:", err)
-		return
-	}
-		fmt.Println(string(prettyJSON))
+			        // Assert that result is of type map[string]interface{}
+        if resMap, ok := result.(map[string]interface{}); ok {
+            // Access the "results" key
+            if results, ok := resMap["results"].([]interface{}); ok {
+                if len(results) > 0 {
+                    // Access the first element
+                    firstElement := results[0]
+
+                    // Print the first element as a pretty JSON string
+                    prettyJSON, err := json.MarshalIndent(firstElement, "", "  ")
+                    if err != nil {
+                        fmt.Println("Error formatting JSON:", err)
+                        return
+                    }
+
+                    fmt.Println(string(prettyJSON))
+                } else {
+                    fmt.Println("Results array is empty.")
+                }
+            } else {
+                fmt.Println("results is not of type []interface{}")
+            }
+        } else {
+            fmt.Println("result is not of type map[string]interface{}")
+        }
 	} else {
 		fmt.Printf("Error: Received status code %d\n", resp.StatusCode)
 		fmt.Println("Response:", string(body)) // Print the response even if it's an error
