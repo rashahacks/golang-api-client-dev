@@ -159,7 +159,7 @@ func totalAnalysisData() {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response:", err)
 		return
@@ -289,8 +289,7 @@ func uploadUrlEndpoint(url string, customHeaders []string) {
 
 	fmt.Println("URL Upload Result:")
 	fmt.Println("------------------")
-	
-	
+
 	if jsmonId, ok := result["jsmonId"].(string); ok {
 		fmt.Printf("JSMON ID: %s\n", jsmonId)
 		getAutomationResultsByJsmonId(result["jsmonId"].(string))
@@ -310,7 +309,7 @@ func uploadUrlEndpoint(url string, customHeaders []string) {
 	// }
 }
 
-// Function : 
+// Function :
 func rescanUrlEndpoint(scanId string) {
 	endpoint := fmt.Sprintf("%s/rescanURL/%s", apiBaseURL, scanId)
 
@@ -419,7 +418,6 @@ func scanFileEndpoint(fileId string) {
 		return
 	}
 
-	
 	var result interface{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
@@ -454,7 +452,7 @@ func urlsmultipleResponse() {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response:", err)
 		return
@@ -468,6 +466,26 @@ func urlsmultipleResponse() {
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		fmt.Println("Error parsing JSON:", err)
+		var prettyJSON bytes.Buffer
+		err := json.Indent(&prettyJSON, body, "", "  ")
+		if err != nil {
+			fmt.Println("Error formatting JSON:", err)
+		} else {
+			fmt.Println("Response body:")
+			fmt.Println(prettyJSON.String())
+		}
+		var errorResponse struct {
+			Message string `json:"message"`
+			Data    struct {
+				URLs []string `json:"urls"`
+			} `json:"data"`
+		}
+		if err := json.Unmarshal(body, &errorResponse); err != nil {
+			fmt.Println("Error parsing error response:", err)
+		} else {
+			fmt.Printf("Error message: %s\n", errorResponse.Message)
+			fmt.Printf("URLs: %v\n", errorResponse.Data.URLs)
+		}
 		return
 	}
 
@@ -567,7 +585,6 @@ func uploadFileEndpoint(filePath string, headers []string) {
 	if err != nil {
 		log.Fatalf("Error reading response: %v", err)
 	}
-
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		log.Fatalf("Upload failed with status code: %d", resp.StatusCode)
