@@ -286,13 +286,9 @@ func uploadUrlEndpoint(url string, customHeaders []string) {
 		fmt.Println("Error parsing JSON:", err)
 		return
 	}
-
-	fmt.Println("URL Upload Result:")
-	fmt.Println("------------------")
-
+	
 	if jsmonId, ok := result["jsmonId"].(string); ok {
-		fmt.Printf("JSMON ID: %s\n", jsmonId)
-		getAutomationResultsByJsmonId(result["jsmonId"].(string))
+		getAutomationResultsByJsmonId(jsmonId)
 	}
 	// if hash, ok := result["hash"].(string); ok {
 	// 	fmt.Printf("Hash: %s\n", hash)
