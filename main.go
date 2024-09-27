@@ -58,7 +58,12 @@ func main() {
 	filteredPortUrls := flag.String("getUrlsWithPorts", "", "get the urls containing a port number in the hostname for the specified domain")
 	s3DomainsInvalid := flag.String("getS3DomainsInvalid", "", "get the S3 domains which are available (404 status code) for the specified domain")
 	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
+	reverseSearchResults := flag.String("reverseSearchResults", "", "Specify the input type (e.g., emails, domainname)")
+	//getResultByValue := flag.String("value", "", "Specify the input value")
+
 	searchUrlsByDomainFlag := flag.String("searchUrlsByDomain", "", "Search URLs by domain")
+	getResultByJsmonId := flag.String("getResultByJsmonId", "", "ID of the jsmon to retrieve automation results for")
+	getResultByFileId := flag.String("getResultByFileId", "", "ID of the File to retrieve automation results for")
 	rescanDomainFlag := flag.String("rescanDomain", "", "Rescan all URLs for a specific domain")
 	totalAnalysisDataFlag := flag.Bool("totalAnalysisData", false, "total count of overall analysis data")
 
@@ -103,7 +108,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -getS3Domains <domain>        	Get all S3 Domains for specified domains\n")
 		fmt.Fprintf(os.Stderr, "  -getIps <domain>              	Get all IPs for specified domains\n")
 		fmt.Fprintf(os.Stderr, "  -getDomainUrls <domain>       	Get Domain URLs for specified domains\n")
-		fmt.Fprintf(os.Stderr, "  -getApiPaths string             	Get the APIs for specified domains\n")
+		fmt.Fprintf(os.Stderr, "  -getApiPaths <domain>             	Get the APIs for specified domains\n")
 		fmt.Fprintf(os.Stderr, "  -getFileExtensionUrls <domain>     	Get the urls containing any type of file(-fileTypes) for the specified domain\n")
 		fmt.Fprintf(os.Stderr, "  -getSocialMediaUrls <domain>       	Get the urls for the social media sites for the specified domain\n")
 		fmt.Fprintf(os.Stderr, "  -getDomainStatus <domain>       	Get the availabilty of domains for the specified domain\n")
@@ -114,7 +119,14 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -rescanDomain <domain>     		Rescan all URLs for a specific domain\n")
 		fmt.Fprintf(os.Stderr, "  -searchUrlsByDomain       		Search URLs by domain\n")
 		fmt.Fprintf(os.Stderr, "  -compare <jsmonId1, jsmonId2>         Compare two JS responses by JSMON_IDs (format: ID1,ID2)\n")
-		fmt.Fprintf(os.Stderr, "  -totalAnalysisData         		gives the total count of overall analysis data\n")
+		fmt.Fprintf(os.Stderr, "  -getGqlOps <domain>                   Get graph QL operations\n")
+		fmt.Fprintf(os.Stderr, "  -totalAnalysisData          		Gives the total count of overall analysis data\n")
+		fmt.Fprintf(os.Stderr, "  -getResultByJsmonId         		Gives the automation result by jsmon id\n")
+		fmt.Fprintf(os.Stderr, "  -getResultByFileId          		Gives automation result by file  id\n")
+
+		fmt.Fprintf(os.Stderr, "\nAUTOMATION RESULTS BY FIELD:  -reverseSearchResults <field>=<value>\n")
+		fmt.Fprintf(os.Stderr, "  -emails, domainname, extracteddomains, s3domains, url, extractedurls, ipv4addresses, ipv6addresses, jwttokens, gqlquery, gqlmutation, guids, apipaths, vulnerabilities, nodemodules, domainstatus, queryparamsurls, socialmediaurls, filterdporturls, gqlfragment, s3domainsinvalid, fileextensionurls, localhosturls\n  Gives the result on the basis of field provided\n")
+		
 	}
 	flag.Parse()
 
@@ -163,6 +175,27 @@ func main() {
 			domains[i] = strings.TrimSpace(domain)
 		}
 		getEmails(domains)
+	case *getResultByJsmonId != "":
+		// Call getAutomationResults with the provided jsmonId
+		getAutomationResultsByJsmonId(strings.TrimSpace(*getResultByJsmonId))
+	case *reverseSearchResults != "":
+        // Split the reverseSearchResults into field and value
+        parts := strings.SplitN(*reverseSearchResults, "=", 2)
+        if len(parts) != 2 {
+            fmt.Println("Invalid format for reverseSearchResults. Use field=value format.")
+            return
+        }
+
+        // Trim spaces and assign to variables
+        field := strings.TrimSpace(parts[0])
+        value := strings.TrimSpace(parts[1])
+
+        // Call the function with the field and value
+        getAutomationResultsByInput(field, value)
+
+	case *getResultByFileId != "":
+		// Call getAutomationResults with the provided jsmonId
+		getAutomationResultsByFileId(strings.TrimSpace(*getResultByFileId))
 	case *s3domains != "":
 		domains := strings.Split(*s3domains, ",")
 		for i, domain := range domains {
