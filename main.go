@@ -41,7 +41,7 @@ func main() {
 	getDomainsFlag := flag.Bool("getDomains", false, "Get all domains for the user.")
 	var headers stringSliceFlag
 	flag.Var(&headers, "H", "Custom headers in the format 'Key: Value' (can be used multiple times)")
-
+	addCustomWordsFlag := flag.String("addCustomWords", "", "add custom words to the scan")
 	usageFlag := flag.Bool("usage", false, "View user profile")
 	viewfiles := flag.Bool("getFiles", false, "view all files")
 	viewEmails := flag.String("getEmails", "", "Get all emails for specified domains.")
@@ -280,6 +280,9 @@ func main() {
 		automateScanDomain(*scanDomainFlag, words)
 	case *usageFlag:
 		callViewProfile()
+	case *addCustomWordsFlag != "":
+		words := strings.Split(*addCustomWordsFlag, ",")
+		addCustomWordUser(words)
 	default:
 		fmt.Println("No valid action specified.")
 		flag.Usage()
