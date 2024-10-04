@@ -60,7 +60,7 @@ func main() {
 	compareFlag := flag.String("compare", "", "Compare two js responses by jsmon_ids (format: JSMON_ID1,JSMON_ID2)")
 	reverseSearchResults := flag.String("reverseSearchResults", "", "Specify the input type (e.g., emails, domainname)")
 	//getResultByValue := flag.String("value", "", "Specify the input value")
-
+	createWordListFlag := flag.String("createWordList", "", "creates a new word list from domains")
 	searchUrlsByDomainFlag := flag.String("searchUrlsByDomain", "", "Search URLs by domain")
 	getResultByJsmonId := flag.String("getResultByJsmonId", "", "Get automation results by jsmon ID.")
 	getResultByFileId := flag.String("getResultByFileId", "", "Get automation results by file ID.")
@@ -280,6 +280,9 @@ func main() {
 		automateScanDomain(*scanDomainFlag, words)
 	case *usageFlag:
 		callViewProfile()
+	case *createWordListFlag != "":
+		domains := strings.Split(*createWordListFlag, ",")
+		createWordList(domains)
 	case *addCustomWordsFlag != "":
 		words := strings.Split(*addCustomWordsFlag, ",")
 		addCustomWordUser(words)
