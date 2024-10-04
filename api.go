@@ -37,6 +37,10 @@ type addCustomWordsRequest struct {
 	Words []string `json:"words"`
 }
 
+type addWordlistRequest struct {
+	Domains []string `json:"domains"`
+}
+
 type AnalysisResult struct {
 	Message     string `json:"message"`
 	TotalChunks int    `json:"totalChunks"`
@@ -391,6 +395,45 @@ func getDomains() {
 	for _, domain := range domains {
 		fmt.Println(domain)
 	}
+}
+
+func createWordList(domains []string) {
+	endpoint := fmt.Sprintf("%s/createWordList", apiBaseURL)
+
+	requestBody := addWordlistRequest{
+		Domains: domains,
+	}
+	body, err := json.Marshal(requestBody)
+	if err != nil {
+		fmt.Printf("failed to marshal request body: %v\n", err)
+		return
+	}
+
+	// Create HTTP request
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(body))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("failed to send request: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("failed to read response body: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Word list:\n%s\n", string(responseBody))
 }
 
 func scanFileEndpoint(fileId string) {
