@@ -301,7 +301,6 @@ func uploadUrlEndpoint(url string, customHeaders []string) {
 		return
 	}
 
-	// Print the response in the same format as received
 	fmt.Printf("{\n")
 	fmt.Printf("    \"message\": \"%s\",\n", result.Message)
 	fmt.Printf("    \"jsmonId\": \"%s\",\n", result.JsmonID)
@@ -310,7 +309,6 @@ func uploadUrlEndpoint(url string, customHeaders []string) {
 	fmt.Printf("    \"url\": \"%s\"\n", result.URL)
 	fmt.Printf("}\n")
 
-	// If you need to use the jsmonId for further processing
 	if result.JsmonID != "" {
 		getAutomationResultsByJsmonId(result.JsmonID)
 	}
