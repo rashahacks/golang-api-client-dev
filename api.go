@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 	// "time"
 )
 
@@ -847,6 +848,7 @@ func automateScanDomain(domain string, words []string) {
 	}
 	defer resp.Body.Close()
 
+	var fileId string
 	decoder := json.NewDecoder(resp.Body)
 	for {
 		var response map[string]interface{}
@@ -859,8 +861,22 @@ func automateScanDomain(domain string, words []string) {
 			return
 		}
 
-		printFormattedResponse(response)
+		if id, ok := response["fileId"]; ok {
+			fileId = id.(string)
+			fmt.Printf("File ID received: %s\n", fileId)
+			break
+		}
 	}
+
+	if fileId == "" {
+		fmt.Println("No File ID received from the scan.")
+		return
+	}
+
+	fmt.Println("Waiting for scan to complete...")
+	time.Sleep(10 * time.Second)
+
+	getAutomationResultsByFileId(fileId)
 }
 
 // func printFormattedResponse(response map[string]interface{}) {
