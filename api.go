@@ -582,8 +582,10 @@ func urlsmultipleResponse() {
 	}
 
 	var response struct {
-		Message string   `json:"message"`
-		Data    []string `json:"data"`
+		Message string `json:"message"`
+		Data    []struct {
+			URL string `json:"url"`
+		} `json:"data"`
 	}
 
 	err = json.Unmarshal(body, &response)
@@ -594,7 +596,7 @@ func urlsmultipleResponse() {
 
 	if len(response.Data) > 0 {
 		for _, url := range response.Data {
-			fmt.Println(url)
+			fmt.Println(url.URL)
 		}
 	}
 }
