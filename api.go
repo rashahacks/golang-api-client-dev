@@ -19,6 +19,24 @@ import (
 	// "time"
 )
 
+type ScannerResult struct {
+	Message string     `json:"message"`
+	Data    []DataItem `json:"data"`
+}
+
+type DataItem struct {
+	JsmonId       string         `json:"jsmonId"`
+	URL           string         `json:"url"`
+	ModuleName    []string       `json:"moduleName"`
+	DetectedWords []DetectedWord `json:"detectedWords"` // Changed to DetectedWords
+	CreatedAt     string         `json:"createdAt"`
+}
+
+type DetectedWord struct {
+	Name  string   `json:"name"`
+	Words []string `json:"words"`
+}
+
 type DiffItem struct {
 	Added   bool   `json:"added"`
 	Removed bool   `json:"removed"`
@@ -797,13 +815,7 @@ func getScannerResults() {
 		return
 	}
 
-	var result struct {
-		Message string `json:"message"`
-		Data    struct {
-			ModuleName []string `json:"moduleName"`
-			URL        string   `json:"url"`
-		} `json:"data"`
-	}
+	var result ScannerResult
 
 	err = json.Unmarshal(body, &result)
 	if err != nil {
@@ -812,11 +824,14 @@ func getScannerResults() {
 	}
 
 	fmt.Println("Message:", result.Message)
-	fmt.Println("URL:", result.Data.URL)
-	fmt.Println("Modules found:")
-	for _, module := range result.Data.ModuleName {
-		fmt.Printf("- %s\n", module)
+	prettyJSON, err := json.MarshalIndent(result.Data, "", "  ")
+	if err != nil {
+		fmt.Println("Error creating JSON:", err)
+		return
 	}
+
+	// Print the pretty JSON output
+	fmt.Printf("Data:\n%s\n", prettyJSON)
 }
 
 func automateScanDomain(domain string, words []string) {
