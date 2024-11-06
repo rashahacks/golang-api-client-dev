@@ -187,7 +187,7 @@ func totalAnalysisData() {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response:", err)
 		return
@@ -593,7 +593,7 @@ func urlsmultipleResponse() {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response:", err)
 		return
@@ -609,6 +609,26 @@ func urlsmultipleResponse() {
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		fmt.Println("Error parsing JSON:", err)
+		var prettyJSON bytes.Buffer
+		err := json.Indent(&prettyJSON, body, "", "  ")
+		if err != nil {
+			fmt.Println("Error formatting JSON:", err)
+		} else {
+			fmt.Println("Response body:")
+			fmt.Println(prettyJSON.String())
+		}
+		var errorResponse struct {
+			Message string `json:"message"`
+			Data    struct {
+				URLs []string `json:"urls"`
+			} `json:"data"`
+		}
+		if err := json.Unmarshal(body, &errorResponse); err != nil {
+			fmt.Println("Error parsing error response:", err)
+		} else {
+			fmt.Printf("Error message: %s\n", errorResponse.Message)
+			fmt.Printf("URLs: %v\n", errorResponse.Data.URLs)
+		}
 		return
 	}
 
