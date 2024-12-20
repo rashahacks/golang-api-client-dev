@@ -215,12 +215,12 @@ func main() {
 		getApiPaths(domains)
 	case *getScannerResultsFlag:
 		getScannerResults()
-	case *scanUrl != "":
-		rescanUrlEndpoint(*scanUrl)
-	case *cron == "start":
-		StartCron(*cronNotification, *cronTime, *cronType, *cronDomains, *cronDomainsNotify)
-	case *cron == "stop":
-		StopCron()
+	// case *scanUrl != "":
+	// 	rescanUrlEndpoint(*scanUrl)
+	// case *cron == "start":
+	// 	StartCron(*cronNotification, *cronTime, *cronType, *cronDomains, *cronDomainsNotify)
+	// case *cron == "stop":
+	// 	StopCron()
 	case *getDomainsFlag:
 		getDomains()
 
@@ -254,8 +254,8 @@ func main() {
 			os.Exit(1)
 		}
 		compareEndpoint(strings.TrimSpace(ids[0]), strings.TrimSpace(ids[1]))
-	case *cron == "update":
-		UpdateCron(*cronNotification, *cronType, *cronDomains, *cronDomainsNotify, *cronTime)
+	// case *cron == "update":
+	// 	UpdateCron(*cronNotification, *cronType, *cronDomains, *cronDomainsNotify, *cronTime)
 	case *getAllResults != "":
 		getAllAutomationResults(*getAllResults, *size)
 	case *scanDomainFlag != "":
