@@ -16,8 +16,8 @@ type DiffItem struct {
 	Value   string `json:"value"`
 }
 
-func compareEndpoint(id1, id2 string) {
-	endpoint := fmt.Sprintf("%s/compare", apiBaseURL)
+func compareEndpoint(id1, id2 string, wkspId string) {
+	endpoint := fmt.Sprintf("%s/compare?wkspId=%s", apiBaseURL, wkspId)
 
 	requestBody, err := json.Marshal(map[string]string{
 		"id1": id1,

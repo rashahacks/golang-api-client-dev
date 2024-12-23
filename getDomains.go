@@ -9,8 +9,8 @@ import (
 	// "time"
 )
 
-func getDomains() {
-	endpoint := fmt.Sprintf("%s/getDomains", apiBaseURL)
+func getDomains(wkspId string) {
+	endpoint := fmt.Sprintf("%s/getDomains?wkspId=%s", apiBaseURL, wkspId)
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {

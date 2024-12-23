@@ -10,9 +10,9 @@ import (
 )
 
 // Function to get emails
-func getEmails(domains []string) {
+func getEmails(domains []string, wkspId string) {
 	// Prepare request data
-	endpoint := fmt.Sprintf("%s/getEmails", apiBaseURL)
+	endpoint := fmt.Sprintf("%s/getEmails?wkspId=%s", apiBaseURL, wkspId)
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"domains": domains,
 	})

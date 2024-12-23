@@ -16,8 +16,8 @@ type SearchUrlsByDomainResponse struct {
 	URLs      []URLEntry `json:"urls"`
 }
 
-func searchUrlsByDomain(domain string) {
-	endpoint := fmt.Sprintf("%s/searchUrlbyDomain?domain=%s", apiBaseURL, url.QueryEscape(domain))
+func searchUrlsByDomain(domain string, wkspId string) {
+	endpoint := fmt.Sprintf("%s/searchUrlbyDomain?domain=%s&wkspId=%s", apiBaseURL, url.QueryEscape(domain), wkspId)
 
 	req, err := http.NewRequest("POST", endpoint, nil)
 	if err != nil {

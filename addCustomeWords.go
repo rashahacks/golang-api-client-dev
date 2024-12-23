@@ -15,7 +15,7 @@ type addCustomWordsRequest struct {
 	Words []string `json:"words"`
 }
 
-func addCustomWordUser(words []string) {
+func addCustomWordUser(words []string, wkspId string) {
 	// Remove empty strings from the words slice
 	cleanedWords := []string{}
 	for _, word := range words {
@@ -45,7 +45,7 @@ func addCustomWordUser(words []string) {
 	}
 
 	// Append the selected operation to the endpoint as a query parameter
-	endpoint := fmt.Sprintf("%s/addCustomWords?operation=%s", apiBaseURL, operation)
+	endpoint := fmt.Sprintf("%s/addCustomWords?operation=%s&wkspId=%s", apiBaseURL, operation, wkspId)
 
 	// Create request body
 	requestBody := addCustomWordsRequest{

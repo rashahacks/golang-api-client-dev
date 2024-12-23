@@ -72,8 +72,8 @@ type URLEntry struct {
 
 // Function :
 
-func uploadFileEndpoint(filePath string, headers []string) {
-	endpoint := fmt.Sprintf("%s/uploadFile", apiBaseURL)
+func uploadFileEndpoint(filePath string, headers []string, wkspId string) {
+	endpoint := fmt.Sprintf("%s/uploadFile?wkspId=%s", apiBaseURL, wkspId)
 
 	headerMaps := []map[string]string{}
 
@@ -176,13 +176,13 @@ func uploadFileEndpoint(filePath string, headers []string) {
 		fmt.Println("Error: fileId is not a string")
 		return
 	}
-	getAutomationResultsByFileId(fileID)
+	getAutomationResultsByFileId(fileID, wkspId)
 
 }
 
-func automateScanDomain(domain string, words []string) {
+func automateScanDomain(domain string, words []string, wkspId string) {
 	fmt.Printf("automateScanDomain called with domain: %s and words: %v\n", domain, words)
-	endpoint := fmt.Sprintf("%s/automateScanDomain", apiBaseURL)
+	endpoint := fmt.Sprintf("%s/automateScanDomain?wkspId=%s", apiBaseURL, wkspId)
 
 	requestBody := AutomateScanDomainRequest{
 		Domain: domain,
@@ -239,5 +239,5 @@ func automateScanDomain(domain string, words []string) {
 	fmt.Println("Waiting for scan to complete...")
 	time.Sleep(10 * time.Second)
 
-	getAutomationResultsByFileId(fileId)
+	getAutomationResultsByFileId(fileId, wkspId)
 }
