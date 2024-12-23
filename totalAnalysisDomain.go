@@ -30,8 +30,8 @@ type AnalysisData struct {
 	TotalGql               int `json:"totalGql"`
 }
 
-func totalAnalysisData() {
-	endpoint := fmt.Sprintf("%s/totalCountAnalysisData", apiBaseURL)
+func totalAnalysisData(wkspId string) {
+	endpoint := fmt.Sprintf("%s/totalCountAnalysisData?wkspId=%s", apiBaseURL, wkspId)
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {

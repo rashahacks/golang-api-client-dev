@@ -9,8 +9,8 @@ import (
 	// "time"
 )
 
-func urlsmultipleResponse() {
-	endpoint := fmt.Sprintf("%s/urlWithMultipleResponse", apiBaseURL)
+func urlsmultipleResponse(wkspId string) {
+	endpoint := fmt.Sprintf("%s/urlWithMultipleResponse?wkspId=%s", apiBaseURL, wkspId)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		fmt.Println("Error creating request:", err)

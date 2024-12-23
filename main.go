@@ -1,15 +1,72 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 )
 
 type stringSliceFlag []string
 
+type Workspace struct {
+	WkspId string `json:"wkspId"`
+	Name   string `json:"name"`
+}
+
+func getWorkspaces() ([]Workspace, error) {
+	endpoint := fmt.Sprintf("%s/workspaces", apiBaseURL)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %v", err)
+	}
+
+	req.Header.Set("X-Jsmon-Key", strings.TrimSpace(getAPIKey()))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response: %v", err)
+	}
+
+	var workspaces []Workspace
+	err = json.Unmarshal(body, &workspaces) // Unmarshal directly into array
+	if err != nil {
+		return nil, fmt.Errorf("error parsing JSON: %v", err)
+	}
+
+	return workspaces, nil
+}
+
+func displayWorkspaces() error {
+	workspaces, err := getWorkspaces()
+	if err != nil {
+		return err
+	}
+
+	if len(workspaces) == 0 {
+		return fmt.Errorf("no workspaces found")
+	}
+
+	fmt.Println("Available Workspaces:")
+	for _, ws := range workspaces {
+		fmt.Printf("%s (ID: %s)\n", ws.Name, ws.WkspId)
+	}
+	fmt.Println("\nUse -wksp <workspace_id> to specify a workspace")
+	return nil
+}
 func (s *stringSliceFlag) String() string {
 	return strings.Join(*s, ", ")
 }
@@ -18,14 +75,34 @@ func (s *stringSliceFlag) Set(value string) error {
 	*s = append(*s, value)
 	return nil
 }
+
+func updateCLI() error {
+	fmt.Println("Updating jsmon-cli to the latest version...")
+
+	cmd := exec.Command("go", "install", "github.com/rashahacks/golang-api-client-dev@latest")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("failed to update jsmon-cli: %v", err)
+	}
+
+	fmt.Println("Successfully updated jsmon-cli to the latest version!")
+	return nil
+}
+
 func main() {
 	uploadUrl := flag.String("u", "", "URL to upload for scanning")
 	apiKeyFlag := flag.String("key", "", "API key for authentication")
+	updateFlag := flag.Bool("ud", false, "Update jsmon-cli to the latest version")
 	scanFileId := flag.String("fid", "", " File to be rescanned by fileId.")
 	uploadFile := flag.String("f", "", "File to upload giving path to the file locally.")
 	getAllResults := flag.String("jsi", "", "View JS Intelligence Data by domain name")
-	size := flag.Int("s", 10000, "Number of results to fetch (default 10000)")
+	size := flag.Int("s", 100, "Number of results to fetch (default 100)")
 	fileTypes := flag.String("type", "", "files type (e.g. pdf,txt)")
+	workspaceFlag := flag.String("wksp", "", "Workspace ID")
+	listWorkspacesFlag := flag.Bool("workspaces", false, "List all available workspaces")
 	getScannerResultsFlag := flag.Bool("secrets", false, "View Keys & Secrets by domain name")
 	// cron := flag.String("cron", "", "Set cronjob.")
 	// cronNotification := flag.String("channel", "", "Set cronjob notification channel.")
@@ -34,15 +111,15 @@ func main() {
 	// cronDomains := flag.String("domains", "", "Set domains for cronjob.")
 	// cronDomainsNotify := flag.String("domainsNotify", "", "Set notify(true/false) for each domain for cronjob.")
 	viewurls := flag.Bool("urls", false, "view all urls")
-	viewurlsSize := flag.Int("us", 10, "Number of URLs to fetch")
+	//viewurlsSize := flag.Int("us", 10, "Number of URLs to fetch")
 	scanDomainFlag := flag.String("d", "", "Domain to automate scan")
 	wordsFlag := flag.String("w", "", "Comma-separated list of words to include in the scan")
 	urlswithmultipleResponse := flag.Bool("curls", false, "View changed JS URLs.")
 	getDomainsFlag := flag.Bool("domains", false, "Get all domains for the user.")
-	
+
 	var headers stringSliceFlag
 	flag.Var(&headers, "H", "Custom headers in the format 'Key: Value' (can be used multiple times)")
-	
+
 	addCustomWordsFlag := flag.String("addCustomWords", "", "add custom words to the scan")
 	usageFlag := flag.Bool("profile", false, "View user profile")
 	viewfiles := flag.Bool("files", false, "view all files")
@@ -65,7 +142,7 @@ func main() {
 	searchUrlsByDomainFlag := flag.String("urlsByDomain", "", "Search URLs by domain")
 	getResultByJsmonId := flag.String("jsiJsmonId", "", "Get JS Intelligence for the jsmon ID.")
 	getResultByFileId := flag.String("jsiFileId", "", "Get JS Intelligence for the file ID.")
-	rescanDomainFlag := flag.String("rd", "", "Rescan all URLs for a specific domain")
+	//rescanDomainFlag := flag.String("rd", "", "Rescan all URLs for a specific domain")
 	totalAnalysisDataFlag := flag.Bool("count", false, "total count of overall analysis data")
 
 	flag.Usage = func() {
@@ -81,6 +158,9 @@ func main() {
 
 		fmt.Fprintf(os.Stderr, "\nAUTHENTICATION:\n")
 		fmt.Fprintf(os.Stderr, "  -key <XXXXXX-XXXX-XXXX-XXXX-XXXXXX>          API key for authentication\n")
+
+		fmt.Fprintf(os.Stderr, "\nUTILITY:\n")
+		fmt.Fprintf(os.Stderr, "  -ud                        Update jsmon-cli to the latest version\n")
 
 		fmt.Fprintf(os.Stderr, "\nOUTPUT:\n")
 		fmt.Fprintf(os.Stderr, "  -jis <domainName>  View JS Intelligence data by domain name\n")
@@ -124,7 +204,13 @@ func main() {
 	}
 
 	flag.Parse()
-
+	if *updateFlag {
+		if err := updateCLI(); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		return
+	}
 	if *apiKeyFlag != "" {
 		setAPIKey(*apiKeyFlag)
 	} else {
@@ -142,33 +228,114 @@ func main() {
 		os.Exit(1)
 	}
 
+	if *listWorkspacesFlag {
+		err := displayWorkspaces()
+		if err != nil {
+			fmt.Printf("Error listing workspaces: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	switch {
 	case *scanFileId != "":
 		scanFileEndpoint(*scanFileId)
 	case *uploadFile != "":
-		uploadFileEndpoint(*uploadFile, headers)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		uploadFileEndpoint(*uploadFile, headers, *workspaceFlag)
 	case *viewurls:
-		viewUrls(*viewurlsSize)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		viewUrls(*size, *workspaceFlag)
 	case *viewfiles:
-		viewFiles()
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		viewFiles(*workspaceFlag)
 	case *uploadUrl != "":
-		uploadUrlEndpoint(*uploadUrl, headers)
-	case *rescanDomainFlag != "":
-		rescanDomain(*rescanDomainFlag)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		uploadUrlEndpoint(*uploadUrl, headers, *workspaceFlag)
+	// case *rescanDomainFlag != "":
+	// 	rescanDomain(*rescanDomainFlag)
 	case *totalAnalysisDataFlag:
-		totalAnalysisData()
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		totalAnalysisData(*workspaceFlag)
 	case *searchUrlsByDomainFlag != "":
-		searchUrlsByDomain(*searchUrlsByDomainFlag)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		searchUrlsByDomain(*searchUrlsByDomainFlag, *workspaceFlag)
 	case *urlswithmultipleResponse:
-		urlsmultipleResponse()
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		urlsmultipleResponse(*workspaceFlag)
 	case *viewEmails != "":
 		domains := strings.Split(*viewEmails, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain)
 		}
-		getEmails(domains)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getEmails(domains, *workspaceFlag)
 	case *getResultByJsmonId != "":
-		getAutomationResultsByJsmonId(strings.TrimSpace(*getResultByJsmonId))
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAutomationResultsByJsmonId(strings.TrimSpace(*getResultByJsmonId), *(workspaceFlag))
 	case *reverseSearchResults != "":
 		parts := strings.SplitN(*reverseSearchResults, "=", 2)
 		if len(parts) != 2 {
@@ -178,43 +345,106 @@ func main() {
 
 		field := strings.TrimSpace(parts[0])
 		value := strings.TrimSpace(parts[1])
-
-		getAutomationResultsByInput(field, value)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAutomationResultsByInput(field, value, *workspaceFlag)
 
 	case *getResultByFileId != "":
-		getAutomationResultsByFileId(strings.TrimSpace(*getResultByFileId))
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAutomationResultsByFileId(strings.TrimSpace(*getResultByFileId), *workspaceFlag)
 	case *s3domains != "":
 		domains := strings.Split(*s3domains, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain)
 		}
-		getS3Domains(domains)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getS3Domains(domains, *workspaceFlag)
 	case *ips != "":
 		domains := strings.Split(*ips, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain)
 		}
-		getAllIps(domains)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAllIps(domains, *workspaceFlag)
 	case *gql != "":
 		domains := strings.Split(*gql, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain)
 		}
-		getGqlOps(domains)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getGqlOps(domains, *workspaceFlag)
 	case *domainUrl != "":
 		domains := strings.Split(*domainUrl, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain)
 		}
-		getDomainUrls(domains)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getDomainUrls(domains, *workspaceFlag)
 	case *apiPath != "":
 		domains := strings.Split(*apiPath, ",")
 		for i, domain := range domains {
 			domains[i] = strings.TrimSpace(domain)
 		}
-		getApiPaths(domains)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getApiPaths(domains, *workspaceFlag)
 	case *getScannerResultsFlag:
-		getScannerResults()
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getScannerResults(*workspaceFlag)
 	// case *scanUrl != "":
 	// 	rescanUrlEndpoint(*scanUrl)
 	// case *cron == "start":
@@ -222,42 +452,122 @@ func main() {
 	// case *cron == "stop":
 	// 	StopCron()
 	case *getDomainsFlag:
-		getDomains()
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getDomains(*workspaceFlag)
 
 	case *fileExtensionUrls != "":
 		extensions := strings.Split(*fileTypes, ",")
 		for i, extension := range extensions {
 			extensions[i] = strings.TrimSpace(extension)
 		}
-		getAllFileExtensionUrls(*fileExtensionUrls, extensions, *size)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAllFileExtensionUrls(*fileExtensionUrls, extensions, *size, *workspaceFlag)
 	case *domainStatus != "":
 		// domains := strings.Split(*domainStatus, ",")
 		// for i, domain := range domains {
 		// 	domains[i] = strings.TrimSpace(domain)
 		// }
-		getAllDomainsStatus(*domainStatus, *size)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAllDomainsStatus(*domainStatus, *size, *workspaceFlag)
 
 	case *socialMediaUrls != "":
-		getAllSocialMediaUrls(*socialMediaUrls, *size)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAllSocialMediaUrls(*socialMediaUrls, *size, *workspaceFlag)
 	case *queryParamsUrls != "":
-		getAllQueryParamsUrls(*queryParamsUrls, *size)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAllQueryParamsUrls(*queryParamsUrls, *size, *workspaceFlag)
 	case *localhostUrls != "":
-		getAllLocalhostUrls(*localhostUrls, *size)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAllLocalhostUrls(*localhostUrls, *size, *workspaceFlag)
 	case *filteredPortUrls != "":
-		getAllFilteredPortUrls(*filteredPortUrls, *size)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAllFilteredPortUrls(*filteredPortUrls, *size, *workspaceFlag)
 	case *s3DomainsInvalid != "":
-		getAllS3DomainsInvalid(*s3DomainsInvalid, *size)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAllS3DomainsInvalid(*s3DomainsInvalid, *size, *workspaceFlag)
 	case *compareFlag != "":
 		ids := strings.Split(*compareFlag, ",")
 		if len(ids) != 2 {
 			fmt.Println("Invalid format for compare. Use: JSMON_ID1,JSMON_ID2")
 			os.Exit(1)
 		}
-		compareEndpoint(strings.TrimSpace(ids[0]), strings.TrimSpace(ids[1]))
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		compareEndpoint(strings.TrimSpace(ids[0]), strings.TrimSpace(ids[1]), *workspaceFlag)
 	// case *cron == "update":
 	// 	UpdateCron(*cronNotification, *cronType, *cronDomains, *cronDomainsNotify, *cronTime)
 	case *getAllResults != "":
-		getAllAutomationResults(*getAllResults, *size)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		getAllAutomationResults(*getAllResults, *size, *workspaceFlag)
 	case *scanDomainFlag != "":
 		words := []string{}
 		if *wordsFlag != "" {
@@ -268,17 +578,41 @@ func main() {
 				words = []string{rootWord}
 			}
 		}
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
 		fmt.Printf("Domain: %s, Words: %v\n", *scanDomainFlag, words)
-		automateScanDomain(*scanDomainFlag, words)
+		automateScanDomain(*scanDomainFlag, words, *workspaceFlag)
 
 	case *usageFlag:
 		callViewProfile()
 	case *createWordListFlag != "":
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
 		domains := strings.Split(*createWordListFlag, ",")
-		createWordList(domains)
+		createWordList(domains, *workspaceFlag)
 	case *addCustomWordsFlag != "":
 		words := strings.Split(*addCustomWordsFlag, ",")
-		addCustomWordUser(words)
+		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		addCustomWordUser(words, *workspaceFlag)
 	default:
 		fmt.Println("No valid action specified.")
 		flag.Usage()

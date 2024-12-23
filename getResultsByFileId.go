@@ -9,9 +9,9 @@ import (
 )
 
 // Function to fetch automation results for a given jsmonId
-func getAutomationResultsByFileId(fileId string) {
+func getAutomationResultsByFileId(fileId string, wkspId string) {
 	// Define the API base URL and endpoint, appending the jsmonId as a query parameter
-	endpoint := fmt.Sprintf("%s/getAllAutomationResults?inputType=fileid&input=%s&showonly=all", apiBaseURL, fileId)
+	endpoint := fmt.Sprintf("%s/getAllAutomationResults?inputType=fileid&input=%s&showonly=all&wkspId=%s", apiBaseURL, fileId, wkspId)
 
 	// Create a new HTTP request with the GET method
 	req, err := http.NewRequest("GET", endpoint, nil) // No need for request body in GET

@@ -14,8 +14,8 @@ type addWordlistRequest struct {
 	Domains []string `json:"domains"`
 }
 
-func createWordList(domains []string) {
-	endpoint := fmt.Sprintf("%s/createWordList", apiBaseURL)
+func createWordList(domains []string, wkspId string) {
+	endpoint := fmt.Sprintf("%s/createWordList?wkspId=%s", apiBaseURL, wkspId)
 
 	requestBody := addWordlistRequest{
 		Domains: domains,

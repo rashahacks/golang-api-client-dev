@@ -9,8 +9,8 @@ import (
 	// "time"
 )
 
-func getAllAutomationResults(input string, size int) {
-	endpoint := fmt.Sprintf("%s/getAllAutomationResults", apiBaseURL)
+func getAllAutomationResults(input string, size int, wkspId string) {
+	endpoint := fmt.Sprintf("%s/getAllAutomationResults?wkspId=%s", apiBaseURL, wkspId)
 
 	url := fmt.Sprintf("%s?showonly=all&inputType=domain&input=%s&size=%d", endpoint, input, size)
 

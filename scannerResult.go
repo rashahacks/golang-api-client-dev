@@ -14,8 +14,8 @@ type ScannerResult struct {
 	Data    []DataItem `json:"data"`
 }
 
-func getScannerResults() {
-	endpoint := fmt.Sprintf("%s/getScannerResults", apiBaseURL)
+func getScannerResults(wkspId string) {
+	endpoint := fmt.Sprintf("%s/getScannerResults?wkspId=%s", apiBaseURL, wkspId)
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {

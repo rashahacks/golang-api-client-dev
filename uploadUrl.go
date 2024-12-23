@@ -10,8 +10,8 @@ import (
 	// "time"
 )
 
-func uploadUrlEndpoint(url string, customHeaders []string) {
-	endpoint := fmt.Sprintf("%s/uploadUrl", apiBaseURL)
+func uploadUrlEndpoint(url string, customHeaders []string, wkspId string) {
+	endpoint := fmt.Sprintf("%s/uploadUrl?wkspId=%s", apiBaseURL, wkspId)
 
 	headerObjects := make([]map[string]string, 0)
 	for _, header := range customHeaders {
@@ -78,6 +78,6 @@ func uploadUrlEndpoint(url string, customHeaders []string) {
 	fmt.Printf("}\n")
 
 	if result.JsmonID != "" {
-		getAutomationResultsByJsmonId(result.JsmonID)
+		getAutomationResultsByJsmonId(result.JsmonID, wkspId)
 	}
 }
