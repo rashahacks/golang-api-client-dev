@@ -18,6 +18,9 @@ type Workspace struct {
 	WkspId string `json:"wkspId"`
 	Name   string `json:"name"`
 }
+type ErrorResponse struct {
+	Message string `json:"message"`
+}
 
 func getWorkspaces() ([]Workspace, error) {
 	endpoint := fmt.Sprintf("%s/workspaces", apiBaseURL)
@@ -39,6 +42,13 @@ func getWorkspaces() ([]Workspace, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response: %v", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		var errorResp ErrorResponse
+		if err := json.Unmarshal(body, &errorResp); err != nil {
+			return nil, fmt.Errorf("unexpected response: %s", string(body))
+		}
+		return nil, fmt.Errorf("API key error: %s", errorResp.Message)
 	}
 
 	var workspaces []Workspace
@@ -259,7 +269,12 @@ func main() {
 			}
 			os.Exit(1)
 		}
-		viewUrls(*size, *workspaceFlag)
+
+		err := viewUrls(*size, *workspaceFlag)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
 	case *viewfiles:
 		if *workspaceFlag == "" {
 			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
@@ -279,7 +294,11 @@ func main() {
 			}
 			os.Exit(1)
 		}
-		uploadUrlEndpoint(*uploadUrl, headers, *workspaceFlag)
+		err := uploadUrlEndpoint(*uploadUrl, headers, *workspaceFlag)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
 	// case *rescanDomainFlag != "":
 	// 	rescanDomain(*rescanDomainFlag)
 	case *totalAnalysisDataFlag:
@@ -587,7 +606,12 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Printf("Domain: %s, Words: %v\n", *scanDomainFlag, words)
-		automateScanDomain(*scanDomainFlag, words, *workspaceFlag)
+
+		err := automateScanDomain(*scanDomainFlag, words, *workspaceFlag)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
 
 	case *usageFlag:
 		callViewProfile()
