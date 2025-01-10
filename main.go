@@ -152,7 +152,6 @@ func main() {
 	searchUrlsByDomainFlag := flag.String("urlsByDomain", "", "Search URLs by domain")
 	getResultByJsmonId := flag.String("jsiJsmonId", "", "Get JS Intelligence for the jsmon ID.")
 	getResultByFileId := flag.String("jsiFileId", "", "Get JS Intelligence for the file ID.")
-	//rescanDomainFlag := flag.String("rd", "", "Rescan all URLs for a specific domain")
 	totalAnalysisDataFlag := flag.Bool("count", false, "total count of overall analysis data")
 
 	flag.Usage = func() {
@@ -198,7 +197,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -localUrls <domain>       Get URLs with localhost in the hostname.\n")
 		fmt.Fprintf(os.Stderr, "  -portUrls <domain>       Get URLs with port numbers in the hostname.\n")
 		fmt.Fprintf(os.Stderr, "  -bucketTakeovers <domain>    Get available S3 domains (404 status).\n")
-		fmt.Fprintf(os.Stderr, "  -rd <domain>           Rescan all URLs for a specific domain.\n")
 		fmt.Fprintf(os.Stderr, "  -urlsByDomain <domain>     Search URLs by domain.\n")
 		fmt.Fprintf(os.Stderr, "  -compare <ID1,ID2>               Compare two JS responses by IDs (format: ID1,ID2).\n")
 		fmt.Fprintf(os.Stderr, "  -gqls <domain>              Get GraphQL operations for specified domains.\n")
@@ -586,7 +584,12 @@ func main() {
 			}
 			os.Exit(1)
 		}
-		getAllAutomationResults(*getAllResults, *size, *workspaceFlag)
+
+		err := getAllAutomationResults(*getAllResults, *size, *workspaceFlag)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
 	case *scanDomainFlag != "":
 		words := []string{}
 		if *wordsFlag != "" {
@@ -614,7 +617,12 @@ func main() {
 		}
 
 	case *usageFlag:
-		callViewProfile()
+
+		err := callViewProfile()
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
 	case *createWordListFlag != "":
 		if *workspaceFlag == "" {
 			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
