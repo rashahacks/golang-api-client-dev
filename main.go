@@ -172,7 +172,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  -ud                        Update jsmon-cli to the latest version\n")
 
 		fmt.Fprintf(os.Stderr, "\nOUTPUT:\n")
-		fmt.Fprintf(os.Stderr, "  -jis <domainName>  View JS Intelligence data by domain name\n")
+		fmt.Fprintf(os.Stderr, "  -jsi <domainName>  View JS Intelligence data by domain name\n")
 		fmt.Fprintf(os.Stderr, "  -secrets                  View Keys & Secrets\n")
 		fmt.Fprintf(os.Stderr, "  -urls                         View all URLs.\n")
 		fmt.Fprintf(os.Stderr, "  -us int                     Number of URLs to fetch (default 10).\n")
