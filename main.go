@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -39,7 +39,7 @@ func getWorkspaces() ([]Workspace, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response: %v", err)
 	}
@@ -114,6 +114,8 @@ func main() {
 	workspaceFlag := flag.String("wksp", "", "Workspace ID")
 	listWorkspacesFlag := flag.Bool("workspaces", false, "List all available workspaces")
 	getScannerResultsFlag := flag.Bool("secrets", false, "View Keys & Secrets by domain name")
+	query := flag.String("query", "", "Enable query builder functionality")
+
 	// cron := flag.String("cron", "", "Set cronjob.")
 	// cronNotification := flag.String("channel", "", "Set cronjob notification channel.")
 	// cronTime := flag.Int64("time", 0, "Set cronjob time.")
@@ -342,8 +344,19 @@ func main() {
 			os.Exit(1)
 		}
 		getEmails(domains, *workspaceFlag)
-	case *getResultByJsmonId != "":
+	case *query != "":
 		if *workspaceFlag == "" {
+			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
+			err := displayWorkspaces()
+			if err != nil {
+				fmt.Printf("Error listing workspaces: %v\n", err)
+			}
+			os.Exit(1)
+		}
+		// constructedQuery := fmt.Sprintf("field = %s, sub = %v, domain = %s", *field, *sub, *domain)
+		queryBuilder(*workspaceFlag, *query)
+	case *getResultByJsmonId != "":
+		if *workspaceFlag == "" {  
 			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
 			err := displayWorkspaces()
 			if err != nil {
