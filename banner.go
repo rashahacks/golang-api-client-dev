@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/common-nighthawk/go-figure"
+	//"github.com/common-nighthawk/go-figure"
 	"github.com/fatih/color"
 )
 
@@ -23,10 +23,10 @@ func showBanner() {
     		jsmon // JavaScript Monitor
 `
     fmt.Println(logo)
-    boldCyan := color.New(color.FgHiCyan, color.Bold)
-    banner := figure.NewFigure("JSMON", "", true)
-    boldCyan.Println(banner.String())
-    color.New(color.FgHiBlue).Println("\t\tjsmon.sh")
+    // boldCyan := color.New(color.FgHiCyan, color.Bold)
+    // banner := figure.NewFigure("JSMON", "", true)
+    // boldCyan.Println(banner.String())
+    // color.New(color.FgHiBlue).Println("\t\tjsmon.sh")
 }
 
 func displayVersion() {
