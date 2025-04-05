@@ -20,7 +20,7 @@ func showBanner() {
 ╚█████╔╝███████║██║ ╚═╝ ██║╚██████╔╝██║ ╚████║
  ╚════╝ ╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
 
-    		jsmon // JavaScript Monitor
+    		JSMON/ Javascript Monitor
 `
     fmt.Println(logo)
     // boldCyan := color.New(color.FgHiCyan, color.Bold)
