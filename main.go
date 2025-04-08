@@ -105,12 +105,8 @@ func updateCLI() error {
 }
 
 func main() {
-	silent := flag.Bool("st", false, " Run in Silent mode (No Banner)")
-	flag.Parse()
-	if !*silent {
-		showBanner()
-		displayVersion()
-	}
+	showBanner()
+	displayVersion()
 	uploadUrl := flag.String("u", "", "URL to upload for scanning")
 	apiKeyFlag := flag.String("key", "", "API key for authentication")
 	updateFlag := flag.Bool("ud", false, "Update jsmon-cli to the latest version")
@@ -118,7 +114,6 @@ func main() {
 	uploadFile := flag.String("f", "", "File to upload giving path to the file locally.")
 	getAllResults := flag.String("jsi", "", "View JS Intelligence Data by domain name")
 	size := flag.Int("s", 100, "Number of results to fetch (default 100)")
-	//fileTypes := flag.String("type", "", "files type (e.g. pdf,txt)")
 	workspaceFlag := flag.String("wksp", "", "Workspace ID")
 	listWorkspacesFlag := flag.Bool("workspaces", false, "List all available workspaces")
 	getScannerResultsFlag := flag.Bool("secrets", false, "View Keys & Secrets by domain name")
@@ -143,6 +138,7 @@ func main() {
 	getResultByJsmonId := flag.String("jsiJsmonId", "", "Get JS Intelligence for the jsmon ID.")
 	getResultByFileId := flag.String("jsiFileId", "", "Get JS Intelligence for the file ID.")
 	totalAnalysisDataFlag := flag.Bool("count", false, "total count of overall analysis data")
+	flag.Parse()
 
 
 	flag.Usage = func() {
@@ -152,7 +148,7 @@ func main() {
     	option := color.New(color.FgHiGreen)
     	url := color.New(color.FgHiBlue, color.Underline)
 
-
+		flag.Parse()
 		title.Printf("Usage of %s:\n", os.Args[0])
 		title.Printf("  %s [flags]\n\n", os.Args[0])
 		section.Println("Flags:")
@@ -426,7 +422,7 @@ func main() {
 			}
 			os.Exit(1)
 		}
-		fmt.Printf("Domain: %s, Words: %v\n", *scanDomainFlag, words)
+		// fmt.Printf("Domain: %s, Words: %v\n", *scanDomainFlag, words)
 
 		err := automateScanDomain(*scanDomainFlag, words, *workspaceFlag)
 		if err != nil {

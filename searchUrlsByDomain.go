@@ -49,8 +49,8 @@ func searchUrlsByDomain(domain string, wkspId string) {
 		return
 	}
 
-	fmt.Printf("Message: %s\n", result.Message)
-	fmt.Printf("Total URLs: %d\n", result.TotalUrls)
+	// fmt.Printf("Message: %s\n", result.Message)
+	// fmt.Printf("Total URLs: %d\n", result.TotalUrls)
 	fmt.Println("URLs:")
 	for _, entry := range result.URLs {
 		fmt.Printf("- %s\n", entry.URL)

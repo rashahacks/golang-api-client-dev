@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -156,7 +155,7 @@ func uploadFileEndpoint(filePath string, headers []string, wkspId string) {
 	}
 	defer resp.Body.Close()
 
-	responseBody, err := ioutil.ReadAll(resp.Body)
+	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("Error reading response: %v", err)
 	}
@@ -180,7 +179,7 @@ func uploadFileEndpoint(filePath string, headers []string, wkspId string) {
 }
 
 func automateScanDomain(domain string, words []string, wkspId string) error {
-	fmt.Printf("automateScanDomain called with domain: %s and words: %v\n", domain, words)
+	// fmt.Printf("automateScanDomain called with domain: %s and words: %v\n", domain, words)
 	endpoint := fmt.Sprintf("%s/automateScanDomain?wkspId=%s", apiBaseURL, wkspId)
 
 	requestBody := AutomateScanDomainRequest{
@@ -207,7 +206,7 @@ func automateScanDomain(domain string, words []string, wkspId string) error {
 	}
 	defer resp.Body.Close()
 
-	responseBody, err := ioutil.ReadAll(resp.Body)
+	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read response body: %v", err)
 	}
@@ -216,32 +215,36 @@ func automateScanDomain(domain string, words []string, wkspId string) error {
 		return fmt.Errorf("failed to parse response body: %v", err)
 	}
 
-	if message, ok := response["message"].(string); ok {
-		fmt.Printf("Message: %s\n", message)
-	}
-	if fileId, ok := response["fileId"].(string); ok {
-		fmt.Printf("File ID: %s\n", fileId)
-	}
-	if normalizedDomain, ok := response["normalizedDomain"].(string); ok {
-		fmt.Printf("Normalized Domain: %s\n", normalizedDomain)
-	}
-	if responseFile, ok := response["responseFile"].(map[string]interface{}); ok {
-		if analysisResult, ok := responseFile["analysis_result"].(map[string]interface{}); ok {
+	// if message, ok := response["message"].(string); ok {
+	// // 	// fmt.Printf("Message: %s\n", message)
+	// }
+	// if fileId, ok := response["fileId"].(string); ok {
+	// // 	// fmt.Printf("File ID: %s\n", fileId)
+	// }
+	// if normalizedDomain, ok := response["normalizedDomain"].(string); ok {
+	//  	// fmt.Printf("Normalized Domain: %s\n", normalizedDomain)
+	// }
+	// if responseFile, ok := response["responseFile"].(map[string]interface{}); ok {
+	// 	if analysisResult, ok := responseFile["analysis_result"].(map[string]interface{}); ok {
 
-			if message, ok := analysisResult["response"].(string); ok {
-				fmt.Printf("Analysis Result Message: %s\n", message)
-			}
-		}
-		if message, ok := responseFile["message"].(string); ok {
-			fmt.Printf("Analysis Result Message: %s\n", message)
-		}
-		if moduleScanResult, ok := responseFile["modulescan_result"].(map[string]interface{}); ok {
+	// 		if message, ok := analysisResult["response"].(string); ok {
+	// 			fmt.Printf("Analysis Result Message: %s\n", message)
+	// 		}
+	// 	}
+	// 	if message, ok := responseFile["message"].(string); ok {
+	// 		fmt.Printf("Analysis Result Message: %s\n", message)
+	// 	}
+	// 	if moduleScanResult, ok := responseFile["modulescan_result"].(map[string]interface{}); ok {
 
-			if message, ok := moduleScanResult["response"].(string); ok {
-				fmt.Printf("Module Scan Message: %s\n", message)
-			}
-		}
+	// 		if message, ok := moduleScanResult["response"].(string); ok {
+	// 			fmt.Printf("Module Scan Message: %s\n", message)
+	// 		}
+	// 	}
+	// }
+	if resp.StatusCode == 200 {
+		fmt.Printf("[INF] %s scanned successfully\n", domain)
+	} else {
+		fmt.Printf("[INF] %s, error in scanning\n", domain)
 	}
-
 	return nil
 }
