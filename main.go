@@ -152,19 +152,12 @@ func main() {
 		title.Printf("Usage of %s:\n", os.Args[0])
 		title.Printf("  %s [flags]\n\n", os.Args[0])
 		section.Println("Flags:")
-		option.Println("  -st\t\tRun in silent mode (no banner output)")
 
 		section.Fprintf(os.Stderr, "\nINPUT:\n")
 		option.Fprintf(os.Stderr, "  -u <URL>          		URL to upload for scanning.\n")
 		option.Fprintf(os.Stderr, "  -fid <fileId>         	File to be rescanned by fileId.\n")
 		option.Fprintf(os.Stderr, "  -f <local file path>          File to upload (local path)\n")
 		option.Fprintf(os.Stderr, "  -d <domainName>   		Domain to scan\n")
-
-		section.Fprintf(os.Stderr, "\nAUTHENTICATION:\n")
-		option.Fprintf(os.Stderr, "  -key <uuid>                   API key for authentication\n")
-
-		section.Fprintf(os.Stderr, "\nUTILITY:\n")
-		option.Fprintf(os.Stderr, "  -ud                           Update jsmon-cli to the latest version\n")
 
 		section.Fprintf(os.Stderr, "\nOUTPUT:\n")
 		option.Fprintf(os.Stderr, "  -jsi <domainName>             View JS Intelligence data by domain name\n")
@@ -176,10 +169,18 @@ func main() {
 		option.Fprintf(os.Stderr, "  -profile                      View user profile.\n")
 		option.Fprintf(os.Stderr, "  -curls                        View changed JS URLs.\n")
 		option.Fprintf(os.Stderr, "  -cw OR -workspace <worspace> Give the workspace you want to give.\n")
+
+
 		section.Fprintf(os.Stderr, "\nADDITIONAL OPTIONS:\n")
 		option.Fprintf(os.Stderr, "  -H <Key: Value>               Custom headers (can be used multiple times).\n")
 		option.Fprintf(os.Stderr, "  -w <words>                    Comma-separated list of words to include in the scan.\n")
 		option.Fprintf(os.Stderr, "  -domains                      Get all domains for the user.\n")
+		option.Println("  -st\t\tRun in silent mode (no banner output)")
+		option.Fprintf(os.Stderr, "  -ud                           Update jsmon-cli to the latest version\n")
+		option.Fprintf(os.Stderr, "  -key <uuid>                   API key for authentication\n")
+
+
+
 
 		option.Fprintf(os.Stderr, "  -urlsByDomain <domain>        Search URLs by domain.\n")
 		//fmt.Fprintf(os.Stderr, "  -compare <ID1,ID2>            Compare two JS responses by IDs (format: ID1,ID2).\n")
