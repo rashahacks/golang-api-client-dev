@@ -61,7 +61,17 @@ func uploadUrlEndpoint(url string, customHeaders []string, wkspId string) error 
 	// if err != nil {
 	// 	return fmt.Errorf("error formatting JSON response: %v", err)
 	// }
-	fmt.Println(string(response["message"].(string)))
+	if messageArr, ok := response["message"].([]interface{}); ok {
+		for _, msg := range messageArr {
+			fmt.Println(msg.(string))
+		}
+	} else if msgStr, ok := response["message"].(string); ok {
+		// fallback if it's a string
+		fmt.Println(msgStr)
+	} else {
+		fmt.Println("[ERR] Unexpected message format in response")
+	}
+	
 
 	// Check for jsmonId or fileId to determine if we need to get automation results
 	if jsmonID, ok := response["jsmonId"].(string); ok && jsmonID != "" {
