@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	// "time"
@@ -28,10 +28,10 @@ func callViewProfile() error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-		return fmt.Errorf("invalid API Key")
+		return fmt.Errorf("[ERR] Invalid API key found in configuration\n[INF] Regenerate your API key at https://jsmon.sh/jsmon-api/quota[INF] Add correct API key in ~/.jsmon/credentials")
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading response body: %v", err)
 	}
@@ -42,14 +42,14 @@ func callViewProfile() error {
 	}
 
 	if errMsg, ok := result["error"].(string); ok && errMsg != "" {
-		return fmt.Errorf("invalid API Key")
+		return fmt.Errorf("[ERR] Invalid API key found in configuration\n[INF] Regenerate your API key at https://jsmon.sh/jsmon-api/quota[INF] Add correct API key in ~/.jsmon/credentials")
 	}
 
 	if status, ok := result["status"].(string); ok && status != "success" {
 		if message, ok := result["message"].(string); ok {
 			return fmt.Errorf("%s", message)
 		}
-		return fmt.Errorf("invalid API Key")
+		return fmt.Errorf("[ERR] Invalid API key found in configuration\n[INF] Regenerate your API key at https://jsmon.sh/jsmon-api/quota[INF] Add correct API key in ~/.jsmon/credentials")
 	}
 
 	if data, ok := result["data"].(map[string]interface{}); ok {
@@ -71,5 +71,5 @@ func callViewProfile() error {
 		return nil
 	}
 
-	return fmt.Errorf("invalid API Key")
+	return fmt.Errorf("[ERR] Invalid API key found in configuration\n[INF] Regenerate your API key at https://jsmon.sh/jsmon-api/quota[INF] Add correct API key in ~/.jsmon/credentials")
 }
