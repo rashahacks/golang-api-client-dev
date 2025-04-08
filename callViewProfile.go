@@ -49,7 +49,7 @@ func callViewProfile() error {
 		if message, ok := result["message"].(string); ok {
 			return fmt.Errorf("%s", message)
 		}
-		return fmt.Errorf("[ERR] Invalid API key found in configuration\n[INF] Regenerate your API key at https://jsmon.sh/jsmon-api/quota[INF] Add correct API key in ~/.jsmon/credentials")
+		return fmt.Errorf("[ERR] Invalid API key found in configuration\n[INF] Regenerate your API key at https://jsmon.sh/jsmon-api/quota\n[INF] Add correct API key in ~/.jsmon/credentials")
 	}
 
 	if data, ok := result["data"].(map[string]interface{}); ok {
