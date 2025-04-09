@@ -40,6 +40,11 @@ func queryBuilder(wkspId, query string) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		fmt.Println("[ERR] Wrong API key")
+		return 
+	}
+
 	// Read and handle the response
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

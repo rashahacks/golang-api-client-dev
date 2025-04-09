@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	// "time"
 )
 
 func callViewProfile() error {
@@ -28,7 +27,7 @@ func callViewProfile() error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-		return fmt.Errorf("[ERR] Invalid API key found in configuration\n[INF] Regenerate your API key at https://jsmon.sh/jsmon-api/quota[INF] Add correct API key in ~/.jsmon/credentials")
+		return fmt.Errorf("invalid API key ")
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -42,14 +41,14 @@ func callViewProfile() error {
 	}
 
 	if errMsg, ok := result["error"].(string); ok && errMsg != "" {
-		return fmt.Errorf("[ERR] Invalid API key found in configuration\n[INF] Regenerate your API key at https://jsmon.sh/jsmon-api/quota[INF] Add correct API key in ~/.jsmon/credentials")
+		return fmt.Errorf("invalid API key ")
 	}
 
 	if status, ok := result["status"].(string); ok && status != "success" {
 		if message, ok := result["message"].(string); ok {
 			return fmt.Errorf("%s", message)
 		}
-		return fmt.Errorf("[ERR] Invalid API key found in configuration\n[INF] Regenerate your API key at https://jsmon.sh/jsmon-api/quota\n[INF] Add correct API key in ~/.jsmon/credentials")
+		return fmt.Errorf("invalid API key")
 	}
 
 	if data, ok := result["data"].(map[string]interface{}); ok {
@@ -71,5 +70,5 @@ func callViewProfile() error {
 		return nil
 	}
 
-	return fmt.Errorf("[ERR] Invalid API key found in configuration\n[INF] Regenerate your API key at https://jsmon.sh/jsmon-api/quota[INF] Add correct API key in ~/.jsmon/credentials")
+	return fmt.Errorf("invalid API key ")
 }
