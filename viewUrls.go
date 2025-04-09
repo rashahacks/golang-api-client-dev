@@ -35,6 +35,11 @@ func viewUrls(size int, wkspId string) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		fmt.Println("[ERR] Wrong API key")
+		return nil
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("failed to read response body: %v", err)
@@ -50,5 +55,6 @@ func viewUrls(size int, wkspId string) error {
 	for _, urlItem := range response.Urls {
 		fmt.Println(urlItem.URL)
 	}
+
 	return nil
 }

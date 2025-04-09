@@ -104,6 +104,12 @@ func updateCLI() error {
 	return nil
 }
 
+func init() {
+	// Remove the default -h / --help flag
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	flag.CommandLine.Usage = func() {} // or keep it empty if you want no help at all
+}
+
 func main() {
 	showBanner()
 	displayVersion()
@@ -140,62 +146,43 @@ func main() {
 	totalAnalysisDataFlag := flag.Bool("count", false, "total count of overall analysis data")
 	flag.Parse()
 
-
 	flag.Usage = func() {
 
-		title := color.New(color.FgHiCyan, color.Bold)
     	section := color.New(color.FgHiYellow, color.Bold)
     	option := color.New(color.FgHiGreen)
-    	url := color.New(color.FgHiBlue, color.Underline)
-
+    
 		flag.Parse()
-		title.Printf("Usage of %s:\n", os.Args[0])
-		title.Printf("  %s [flags]\n\n", os.Args[0])
-		section.Println("Flags:")
 
-		section.Fprintf(os.Stderr, "\nINPUT:\n")
+		section.Fprintf(os.Stderr, "\nSCAN:\n")
 		option.Fprintf(os.Stderr, "  -u <URL>          		URL to upload for scanning.\n")
-		option.Fprintf(os.Stderr, "  -fid <fileId>         	File to be rescanned by fileId.\n")
 		option.Fprintf(os.Stderr, "  -f <local file path>          File to upload (local path)\n")
 		option.Fprintf(os.Stderr, "  -d <domainName>   		Domain to scan\n")
 
-		section.Fprintf(os.Stderr, "\nOUTPUT:\n")
+		section.Fprintf(os.Stderr, "\nFETCH:\n")
 		option.Fprintf(os.Stderr, "  -jsi <domainName>             View JS Intelligence data by domain name\n")
-		option.Fprintf(os.Stderr, "  -secrets                      View Keys & Secrets\n")
 		option.Fprintf(os.Stderr, "  -urls                         View all URLs.\n")
-		option.Fprintf(os.Stderr, "  -us int                       Number of URLs to fetch (default 10).\n")
 		option.Fprintf(os.Stderr, "  -files                        View all files.\n")
-		option.Fprintf(os.Stderr, "  -type <types>                 Specify file types (e.g., pdf,txt), use ',' as separator.\n")
 		option.Fprintf(os.Stderr, "  -profile                      View user profile.\n")
 		option.Fprintf(os.Stderr, "  -curls                        View changed JS URLs.\n")
-		option.Fprintf(os.Stderr, "  -cw OR -workspace <worspace> Give the workspace you want to give.\n")
-
+		option.Fprintf(os.Stderr, "  -jsiJsmonId <ID>              Get automation results by jsmon ID.\n")
+		option.Fprintf(os.Stderr, "  -urlsByDomain <domain>        Search URLs by domain.\n")
+		option.Fprintf(os.Stderr, "  -count                        Get total count of overall analysis data.\n")
+		option.Fprintf(os.Stderr, "  -jsiFileId <ID>               Get automation results by file ID.\n")
+		option.Fprintf(os.Stderr, "  -query <field>=<value>        Get all the data by Jsmon queries \n ")
+		option.Fprintf(os.Stderr, " -rsearch <field>=<value>      Search by field given in the description at the end.\n")
 
 		section.Fprintf(os.Stderr, "\nADDITIONAL OPTIONS:\n")
 		option.Fprintf(os.Stderr, "  -H <Key: Value>               Custom headers (can be used multiple times).\n")
 		option.Fprintf(os.Stderr, "  -w <words>                    Comma-separated list of words to include in the scan.\n")
 		option.Fprintf(os.Stderr, "  -domains                      Get all domains for the user.\n")
-		option.Println("  -st\t\tRun in silent mode (no banner output)")
 		option.Fprintf(os.Stderr, "  -ud                           Update jsmon-cli to the latest version\n")
+		option.Fprintf(os.Stderr, "  -st                           Run in silent mode (no banner output\n")
+		option.Fprintf(os.Stderr, "  -type <types>                 Specify file types (e.g., pdf,txt), use ',' as separator.\n")
+		option.Fprintf(os.Stderr, "  -cw OR -workspace <worspace>  Give the workspace you want to give.\n")
+		option.Fprintf(os.Stderr, "  -us int                       Number of URLs to fetch (default 10).\n")
 		option.Fprintf(os.Stderr, "  -key <uuid>                   API key for authentication\n")
-
-
-
-
-		option.Fprintf(os.Stderr, "  -urlsByDomain <domain>        Search URLs by domain.\n")
-		//fmt.Fprintf(os.Stderr, "  -compare <ID1,ID2>            Compare two JS responses by IDs (format: ID1,ID2).\n")
-		//fmt.Fprintf(os.Stderr, "  -gqls <domain>                Get GraphQL operations for specified domains.\n")
-		option.Fprintf(os.Stderr, "  -count                        Get total count of overall analysis data.\n")
-		option.Fprintf(os.Stderr, "  -jsiJsmonId <ID>              Get automation results by jsmon ID.\n")
-		option.Fprintf(os.Stderr, "  -jsiFileId <ID>               Get automation results by file ID.\n")
-
-		option.Fprintf(os.Stderr, "\nQUERY:\n")
-		option.Fprintf(os.Stderr, "  -query <field>=<value>       Get all the data by Jsmon queries \n ")
-		url.Fprintf(os.Stderr, "  check query guide here `https://bit.ly/4krnkEq`")
-
-		// Automation results section
-		section.Fprintf(os.Stderr, "\nReverse JS search:\n")
-		option.Fprintf(os.Stderr, "  -rsearch <field>=<value>      Search by field: emails, domainname, extracteddomains, s3domains, url, extractedurls, ipv4addresses, ipv6addresses, jwttokens, gqlquery, gqlmutation, guids, apipaths, vulnerabilities, nodemodules, domainstatus, queryparamsurls, socialmediaurls, filterdporturls, gqlfragment, s3domainsinvalid, fileextensionurls, localhosturls.\n")
+		option.Fprintf(os.Stderr, "  -> Query Guide: `https://bit.ly/4krnkEq`\n")
+		option.Fprintf(os.Stderr,  "  -> Available fields for -rsearch fields: emails, domainname, extracteddomains, s3domains, url, extractedurls, ipv4addresses, ipv6addresses, jwttokens, gqlquery, gqlmutation, guids, apipaths, vulnerabilities, nodemodules, domainstatus, queryparamsurls, socialmediaurls, filterdporturls, gqlfragment, s3domainsinvalid, fileextensionurls, localhosturls.")
 
 	}
 
