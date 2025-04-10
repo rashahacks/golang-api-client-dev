@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	// "time"
 )
 
 func getDomains(wkspId string) {
@@ -31,7 +30,7 @@ func getDomains(wkspId string) {
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		fmt.Println("[ERR] Wrong API key")
-		return 
+		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -47,7 +46,6 @@ func getDomains(wkspId string) {
 		return
 	}
 
-	// Print each domain on a new line
 	for _, domain := range domains {
 		fmt.Println(domain)
 	}

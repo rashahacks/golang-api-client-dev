@@ -10,9 +10,8 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
-  "github.com/fatih/color"
+	"github.com/fatih/color"
 )
-
 
 type stringSliceFlag []string
 
@@ -65,6 +64,7 @@ func getWorkspaces() ([]Workspace, error) {
 func displayWorkspaces() error {
 	workspaces, err := getWorkspaces()
 	if err != nil {
+		fmt.Println("[INF] Use -wksp to list the workspaces")
 		return err
 	}
 
@@ -79,6 +79,20 @@ func displayWorkspaces() error {
 	fmt.Println("\nUse -wksp <workspace_id> to specify a workspace")
 	return nil
 }
+
+func showAvailableWorkspaces() error {
+	workspaces, err := getWorkspaces()
+	if err !=nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Available Workspaces:")
+	for _, ws := range workspaces {
+		fmt.Printf("%s (ID: %s)\n", ws.Name, ws.WkspId)
+	}
+	fmt.Println("\nUse -wksp <workspace_id> to specify a workspace")
+	return nil
+}
+
 func (s *stringSliceFlag) String() string {
 	return strings.Join(*s, ", ")
 }
@@ -148,9 +162,9 @@ func main() {
 
 	flag.Usage = func() {
 
-    	section := color.New(color.FgHiYellow, color.Bold)
-    	option := color.New(color.FgHiGreen)
-    
+		section := color.New(color.FgHiYellow, color.Bold)
+		option := color.New(color.FgHiGreen)
+
 		flag.Parse()
 
 		section.Fprintf(os.Stderr, "\nSCAN:\n")
@@ -181,8 +195,9 @@ func main() {
 		option.Fprintf(os.Stderr, "  -cw OR -workspace <worspace>  Give the workspace you want to give.\n")
 		option.Fprintf(os.Stderr, "  -us int                       Number of URLs to fetch (default 10).\n")
 		option.Fprintf(os.Stderr, "  -key <uuid>                   API key for authentication\n")
-		option.Fprintf(os.Stderr, "  -> Query Guide: `https://bit.ly/4krnkEq`\n")
-		option.Fprintf(os.Stderr,  "  -> Available fields for -rsearch fields: emails, domainname, extracteddomains, s3domains, url, extractedurls, ipv4addresses, ipv6addresses, jwttokens, gqlquery, gqlmutation, guids, apipaths, vulnerabilities, nodemodules, domainstatus, queryparamsurls, socialmediaurls, filterdporturls, gqlfragment, s3domainsinvalid, fileextensionurls, localhosturls.")
+
+		section.Fprintf(os.Stderr, "->  [INF] Query Guide: `https://knowledge.jsmon.sh/query-data/query-guide`\n")
+		section.Fprintf(os.Stderr, "->  [INF] Available fields for -rsearch fields: emails, domainname, extracteddomains, s3domains, url, extractedurls, ipv4addresses, ipv6addresses, jwttokens, gqlquery, gqlmutation, guids, apipaths, vulnerabilities, nodemodules, domainstatus, queryparamsurls, socialmediaurls, filterdporturls, gqlfragment, s3domainsinvalid, fileextensionurls, localhosturls.")
 
 	}
 
@@ -267,7 +282,7 @@ func main() {
 			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
 			err := displayWorkspaces()
 			if err != nil {
-				fmt.Printf("Error listing workspaces: %v\n", err)
+				fmt.Printf("es: %v\n", err)
 			}
 			os.Exit(1)
 		}
@@ -318,7 +333,7 @@ func main() {
 		// constructedQuery := fmt.Sprintf("field = %s, sub = %v, domain = %s", *field, *sub, *domain)
 		queryBuilder(*workspaceFlag, *query)
 	case *getResultByJsmonId != "":
-		if *workspaceFlag == "" {  
+		if *workspaceFlag == "" {
 			fmt.Println("No workspace specified. Use -workspaces to list available workspaces and provide a workspace ID using the -wksp flag.")
 			err := displayWorkspaces()
 			if err != nil {
