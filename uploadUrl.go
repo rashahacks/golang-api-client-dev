@@ -64,14 +64,18 @@ func uploadUrlEndpoint(url string, customHeaders []string, wkspId string) error 
 	if messageArr, ok := response["message"].([]interface{}); ok {
 		for _, msg := range messageArr {
 			fmt.Println(msg.(string))
+			if msg.(string) == "You don't have access to this workspace or it doesn't exist." {
+				showAvailableWorkspaces()
+			}
 		}
 	} else if msgStr, ok := response["message"].(string); ok {
-		// fallback if it's a string
 		fmt.Println(msgStr)
+		if msgStr == "You don't have access to this workspace or it doesn't exist." {
+			showAvailableWorkspaces()
+		}
 	} else {
 		fmt.Println("[ERR] Unexpected message format in response")
 	}
-	
 
 	// Check for jsmonId or fileId to determine if we need to get automation results
 	if jsmonID, ok := response["jsmonId"].(string); ok && jsmonID != "" {
