@@ -196,8 +196,8 @@ func main() {
 		option.Fprintf(os.Stderr, "  -us int                       Number of URLs to fetch (default 10).\n")
 		option.Fprintf(os.Stderr, "  -key <uuid>                   API key for authentication\n")
 
-		section.Fprintf(os.Stderr, "  [INF] Query Guide: `https://knowledge.jsmon.sh/query-data/query-guide`\n")
-		section.Fprintf(os.Stderr, "  [INF] Available fields for -rsearch fields: emails, domainname, extracteddomains, s3domains, url, extractedurls, ipv4addresses, ipv6addresses, jwttokens, gqlquery, gqlmutation, guids, apipaths, vulnerabilities, nodemodules, domainstatus, queryparamsurls, socialmediaurls, filterdporturls, gqlfragment, s3domainsinvalid, fileextensionurls, localhosturls.")
+		section.Fprintf(os.Stderr, "[INF] Query Guide: `https://knowledge.jsmon.sh/query-data/query-guide`\n")
+		section.Fprintf(os.Stderr, "[INF] Available fields for -rsearch fields: emails, domainname, extracteddomains, s3domains, url, extractedurls, ipv4addresses, ipv6addresses, jwttokens, gqlquery, gqlmutation, guids, apipaths, vulnerabilities, nodemodules, domainstatus, queryparamsurls, socialmediaurls, filterdporturls, gqlfragment, s3domainsinvalid, fileextensionurls, localhosturls.")
 
 	}
 
