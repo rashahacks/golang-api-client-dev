@@ -9,8 +9,12 @@ import (
 	"strings"
 )
 
-// QueryBuilder executes a POST request to the /queryBuilder endpoint with the given workspace ID and query.
-// It expects the caller to provide the API base URL and API key.
+// Response structure for JSON unmarshalling
+type QueryBuilderResponse struct {
+	JSUrls           []string      `json:"urls"`
+	PaginatedResults []interface{} `json:"paginatedResults"`
+}
+
 func queryBuilder(wkspId, query string) {
 	endpoint := fmt.Sprintf("%s/queryBuilder?wkspId=%s", apiBaseURL, wkspId)
 
@@ -49,45 +53,30 @@ func queryBuilder(wkspId, query string) {
 		return
 	}
 
-	var response map[string]interface{}
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		fmt.Printf("Failed to unmarshal JSON response: %v\n", err)
+	var result QueryBuilderResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		fmt.Printf("Failed to parse JSON: %v\n", err)
 		return
 	}
 
-	
-	// Print JS URLs
-if urls, ok := response["urls"].([]interface{}); ok {
-	fmt.Println("JS URLs:")
-	for _, item := range urls {
-		if url, ok := item.(string); ok {
+	// Case 1: Show JS URLs if present
+	if len(result.JSUrls) > 0 {
+		for _, url := range result.JSUrls {
 			fmt.Println(url)
 		}
+		return
 	}
-} else {
-	fmt.Println("No JS URLs found in 'urls' field.")
-}
 
-// Print paginatedResults if available
-if paginatedResults, ok := response["paginatedResults"].([]interface{}); ok && len(paginatedResults) > 0 {
-	fmt.Println("\nPaginated Results:")
-	switch paginatedResults[0].(type) {
-	case string:
-		var results []string
-		for _, item := range paginatedResults {
+	// Case 2: Show paginated results if present (each on new line, no commas)
+	if len(result.PaginatedResults) > 0 {
+		for _, item := range result.PaginatedResults {
 			if val, ok := item.(string); ok {
-				results = append(results, val)
+				fmt.Println(val)
 			}
 		}
-		output, _ := json.MarshalIndent(results, "", "    ")
-		fmt.Println(string(output))
-	default:
-		output, _ := json.MarshalIndent(paginatedResults, "", "    ")
-		fmt.Println(string(output))
+		return
 	}
-} else {
-	fmt.Println("No paginated results found.")
-}
 
+	// Case 3: Neither present
+	fmt.Println("No JS URLs or paginated results found.")
 }
