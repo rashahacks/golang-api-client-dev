@@ -30,7 +30,6 @@ var fieldMapping = map[string]string{
     "urls-socialmedia": "socialMediaUrls",
     "urls-localhost": "localhostUrls",
     "urls-ports": "filteredPortUrls",
-    "urls-extensions": "fileExtensionUrls",
 }
 
 type QueryBuilderResponse struct {
