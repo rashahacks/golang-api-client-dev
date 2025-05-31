@@ -10,36 +10,38 @@ import (
 )
 
 var fieldMapping = map[string]string{
-	"urls": "extractedUrls",
-    "domains": "extractedDomains",
-    "ipv4": "ipv4Addresses",
-    "ipv6": "ipv6Addresses",
-    "emails": "emails",
-    "cloud-buckets": "s3Domains",
-    "apis": "apiPaths",
-    "gql-queries": "gqlQuery",
-    "gql-mutations": "gqlMutation",
-    "node-modules-confusion": "invalidNodeModules",
-    "node-modules": "validNodeModules",
-    "gql-fragments": "gqlFragment",
-    "vulnerabilities": "vulnerabilities",
-    "guids": "guids",
-    "domains-status": "extractedDomainsStatus",
-    "urls-parameters": "queryParamsUrls",
-    "bucket-takeovers": "invalidS3Domains",
-    "urls-socialmedia": "socialMediaUrls",
-    "urls-localhost": "localhostUrls",
-    "urls-ports": "filteredPortUrls",
+	"urls":                   "extractedUrls",
+	"domains":                "extractedDomains",
+	"ipv4":                   "ipv4Addresses",
+	"ipv6":                   "ipv6Addresses",
+	"emails":                 "emails",
+	"cloud-buckets":          "s3Domains",
+	"apis":                   "apiPaths",
+	"gql-queries":            "gqlQuery",
+	"gql-mutations":          "gqlMutation",
+	"node-modules-confusion": "invalidNodeModules",
+	"node-modules":           "validNodeModules",
+	"gql-fragments":          "gqlFragment",
+	"vulnerabilities":        "vulnerabilities",
+	"guids":                  "guids",
+	"domains-status":         "extractedDomainsStatus",
+	"urls-parameters":        "queryParamsUrls",
+	"bucket-takeovers":       "invalidS3Domains",
+	"urls-socialmedia":       "socialMediaUrls",
+	"urls-localhost":         "localhostUrls",
+	"urls-ports":             "filteredPortUrls",
+	"exposures":              "exposures",
+	"jsUrls":                 "jsUrls",
 }
 
 type QueryBuilderResponse struct {
-	PaginatedResults         []string `json:"paginatedResults"`
-	URLs                     []string `json:"urls"`
-	IsReverseSearchAvailable bool     `json:"isReverseSearchAvailable"`
+	PaginatedResults         []map[string]interface{} `json:"paginatedResults"`
+	URLs                     []string                 `json:"urls"`
+	IsReverseSearchAvailable bool                     `json:"isReverseSearchAvailable"`
 }
 
 func queryBuilder(wkspId, query string) {
-	
+
 	if strings.HasPrefix(query, "field=") {
 		fieldType := strings.TrimPrefix(query, "field=")
 		if mappedField, exists := fieldMapping[fieldType]; exists {
