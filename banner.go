@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	//"github.com/common-nighthawk/go-figure"
+	// "github.com/common-nighthawk/go-figure"
 	"github.com/fatih/color"
 )
 
